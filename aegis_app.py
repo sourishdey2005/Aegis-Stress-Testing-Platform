@@ -882,10 +882,20 @@ with price_tab2:
             
             col1, col2 = st.columns(2)
             with col1:
-                st.metric("Latest Close", f"${ohlc_df['Close'].iloc[-1]:,.2f}", 
-                         f"{((ohlc_df['Close'].iloc[-1] / ohlc_df['Close'].iloc[-2]) - 1) * 100:.2f}%")
+                st.markdown(f"""
+                <div style="background:#fff; border:1px solid #E2E8F0; border-radius:8px; padding:16px; text-align:center;">
+                    <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:#718096; margin-bottom:4px;">Latest Close</div>
+                    <div style="font-size:20px; font-weight:700; color:#0D1B2A;">${ohlc_df['Close'].iloc[-1]:,.2f}</div>
+                    <div style="font-size:14px; color:#DC2626;">{((ohlc_df['Close'].iloc[-1] / ohlc_df['Close'].iloc[-2]) - 1) * 100:.2f}%</div>
+                </div>
+                """, unsafe_allow_html=True)
             with col2:
-                st.metric("Volume", f"{ohlc_df['Volume'].iloc[-1]:,.0f}")
+                st.markdown(f"""
+                <div style="background:#fff; border:1px solid #E2E8F0; border-radius:8px; padding:16px; text-align:center;">
+                    <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:#718096; margin-bottom:4px;">Volume</div>
+                    <div style="font-size:20px; font-weight:700; color:#0D1B2A;">{ohlc_df['Volume'].iloc[-1]:,.0f}</div>
+                </div>
+                """, unsafe_allow_html=True)
         else:
             st.warning("No price data available for " + ohlc_ticker)
     else:
