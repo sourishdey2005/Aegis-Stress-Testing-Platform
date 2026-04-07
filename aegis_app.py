@@ -108,10 +108,23 @@ html, body, [class*="css"] {
 }
 .aegis-nav-links {
     display: flex;
-    gap: 28px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-secondary);
+    gap: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.aegis-nav-link {
+    padding: 8px 16px;
+    border-radius: 6px;
+    background: rgba(26, 86, 219, 0.1);
+    color: var(--accent-blue);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.aegis-nav-link:hover {
+    background: var(--accent-blue);
+    color: white;
 }
 .aegis-status {
     display: flex;
@@ -440,11 +453,11 @@ st.markdown("""
         <span class="aegis-brand-text">Aegis Risk Lab</span>
     </div>
     <div class="aegis-nav-links">
-        <span>Data Engine</span>
-        <span>Scenario Generator</span>
-        <span>Simulation</span>
-        <span>Analytics</span>
-        <span>Export</span>
+        <div class="aegis-nav-link">Data Engine</div>
+        <div class="aegis-nav-link">Scenario Generator</div>
+        <div class="aegis-nav-link">Simulation</div>
+        <div class="aegis-nav-link">Analytics</div>
+        <div class="aegis-nav-link">Export</div>
     </div>
     <div class="aegis-status">
         <div class="aegis-status-dot"></div>
