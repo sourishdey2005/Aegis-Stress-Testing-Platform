@@ -834,30 +834,13 @@ with price_tab2:
     ohlc_ticker = st.selectbox("Select Ticker for Candlestick", valid_tickers, key="ohlc_sel")
     ohlc_data = yf.download(ohlc_ticker, period=data_period, progress=False)
     
-    st.caption(f"Data shape: {ohlc_data.shape if ohlc_data is not None else 'None'}")
-    
     if ohlc_data is not None and len(ohlc_data) > 0:
         ohlc_df = ohlc_data.copy()
-        col_list = list(ohlc_df.columns)
         
         if isinstance(ohlc_df.columns, pd.MultiIndex):
-            st.caption("MultiIndex detected, attempting to flatten")
-            try:
-                ohlc_df = ohlc_df.xs(ohlc_ticker, axis=1)
-            except:
-                try:
-                    ohlc_df = ohlc_df.droplevel(0, axis=1)
-                except:
-                    ohlc_df = ohlc_data.xs(0, axis=1) if len(ohlc_data.columns.get_level_values(0)) > 1 else ohlc_df
-            col_list = list(ohlc_df.columns)
+            ohlc_df.columns = [c[1] if len(c) > 1 else c[0] for c in ohlc_df.columns]
         
-        st.caption(f"Columns: {col_list}")
-        
-        if 'Close' in col_list or len(col_list) >= 4:
-            if isinstance(ohlc_df.columns, pd.MultiIndex):
-                ohlc_df.columns = [c[1] if isinstance(c, tuple) else c for c in ohlc_df.columns]
-                col_list = list(ohlc_df.columns)
-            
+        if 'Close' in ohlc_df.columns:
             ohlc_df = ohlc_df[['Open', 'High', 'Low', 'Close', 'Volume']]
             
             fig_candle = go.Figure()
@@ -889,7 +872,6 @@ with price_tab2:
                 st.metric("Volume", f"{ohlc_df['Volume'].iloc[-1]:,.0f}")
         else:
             st.warning("No price data available for " + ohlc_ticker)
-            st.caption(f"Available columns: {col_list}")
     else:
         st.warning("No data available for " + ohlc_ticker)
 
