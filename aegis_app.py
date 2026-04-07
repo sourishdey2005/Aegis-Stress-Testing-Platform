@@ -829,8 +829,8 @@ for i, tkr in enumerate(valid_tickers[:6]):
         """, unsafe_allow_html=True)
 
 # Price chart with multiple visualizations
-price_tab1, price_tab2, price_tab3, price_tab4, price_tab5, price_tab6, price_tab7 = st.tabs([
-    "📈 Price History", "🕯️ Candlestick", "📊 Technicals", "🔗 Correlation", "📉 Risk Metrics", "🕯️ Candle Variants", "📊 Advanced Charts"
+price_tab1, price_tab2, price_tab3, price_tab4, price_tab5 = st.tabs([
+    "📈 Price History", "🕯️ Candlestick", "📊 Technicals", "🔗 Correlation", "📉 Risk Metrics"
 ])
 
 with price_tab1:
@@ -1048,8 +1048,7 @@ with price_tab5:
     )
     st.plotly_chart(fig_radar, use_container_width=True, key="radar_chart")
 
-# ── Candlestick Variants Tab ─────────────────────────────────────────────
-with price_tab6:
+# Regime detection
     candle_ticker = st.selectbox("Select Ticker for Candle Variants", valid_tickers, key="candle_var_sel")
     candle_data = yf.download(candle_ticker, period=data_period, progress=False)
     
@@ -1316,8 +1315,7 @@ def create_candle_variant(df, variant_type, ticker, COLORS):
     )
     return fig
 
-# ── Advanced Charts Tab ──────────────────────────────────────────────────
-with price_tab7:
+# Regime detection
     adv_ticker = st.selectbox("Select Ticker for Advanced Charts", valid_tickers, key="adv_chart_sel")
     adv_data = yf.download(adv_ticker, period=data_period, progress=False)
     
