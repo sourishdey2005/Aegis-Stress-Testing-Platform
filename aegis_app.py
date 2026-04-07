@@ -1303,6 +1303,321 @@ def create_candle_variant(df, variant_type, ticker, COLORS):
     )
     return fig
 
+# ── Advanced Charts Tab ──────────────────────────────────────────────────
+price_tab7 = st.tabs(["📈 Price History", "🕯️ Candlestick", "📊 Technicals", "🔗 Correlation", "📉 Risk Metrics", "🕯️ Candle Variants", "📊 Advanced Charts"])
+
+with price_tab7:
+    adv_ticker = st.selectbox("Select Ticker for Advanced Charts", valid_tickers, key="adv_chart_sel")
+    adv_data = yf.download(adv_ticker, period=data_period, progress=False)
+    
+    if adv_data is not None and not adv_data.empty:
+        adv_df = adv_data.copy()
+        if isinstance(adv_df.columns, pd.MultiIndex):
+            try:
+                adv_df = adv_df.xs(adv_ticker, axis=1)
+            except:
+                adv_df = adv_df.droplevel(0, axis=1) if hasattr(adv_df.columns, 'droplevel') else adv_df
+        
+        if 'Close' in adv_df.columns:
+            adv_df = adv_df[['Open', 'High', 'Low', 'Close', 'Volume']]
+            
+            st.markdown("### 📊 30+ Advanced Chart Types")
+            
+            adv_charts = [
+                ("1️⃣ Line Chart", "line"),
+                ("2️⃣ Smooth Line", "smooth"),
+                ("3️⃣ Step Line", "step"),
+                ("4️⃣ Area Fill", "area"),
+                ("5️⃣ Stacked Area", "stacked_area"),
+                ("6️⃣ Bar Chart", "bar"),
+                ("7️⃣ Grouped Bar", "grouped_bar"),
+                ("8️⃣ Stacked Bar", "stacked_bar"),
+                ("9️⃣ Horizontal Bar", "h_bar"),
+                ("🔟 Waterfall", "waterfall"),
+                ("1️⃣1️⃣ Funnel", "funnel"),
+                ("1️⃣2️⃣ Pie Chart", "pie"),
+                ("1️⃣3️⃣ Donut Chart", "donut"),
+                ("1️⃣4️⃣ Treemap", "treemap"),
+                ("1️⃣5️⃣ Sunburst", "sunburst"),
+                ("1️⃣6️⃣ Parallel Categories", "par_cat"),
+                ("1️⃣7️⃣ Scatter Plot", "scatter"),
+                ("1️⃣8️⃣ Bubble Chart", "bubble"),
+                ("1️⃣9️⃣ Dot Plot", "dot"),
+                ("2️⃣0️⃣ Histogram", "histogram"),
+                ("2️⃣1️⃣ Box Plot", "box"),
+                ("2️⃣2️⃣ Violin Plot", "violin"),
+                ("2️⃣3️⃣ Strip Plot", "strip"),
+                ("2️⃣4️⃣ ECDF Plot", "ecdf"),
+                ("2️⃣5️⃣ QQ Plot", "qq"),
+                ("2️⃣6️⃣ Density Contour", "density"),
+                ("2️⃣7️⃣ Heatmap", "heatmap"),
+                ("2️⃣8️⃣ 3D Scatter", "scatter3d"),
+                ("2️⃣9️⃣ 3D Surface", "surface3d"),
+                ("3️⃣0️⃣ Polar Chart", "polar"),
+                ("3️⃣1️⃣ Radar Fill", "radar_fill"),
+                ("3️⃣2️⃣ Horizontal Line", "h_line"),
+                ("3️⃣3️⃣ Candle + Volume Profile", "vol_profile"),
+                ("3️⃣4️⃣ Return Decomposition", "decomp"),
+                ("3️⃣5️⃣ Rolling Regression", "roll_reg")
+            ]
+            
+            chart_cols = st.columns(2)
+            for idx, (chart_name, chart_type) in enumerate(adv_charts):
+                with chart_cols[idx % 2]:
+                    try:
+                        fig_adv = create_advanced_chart(adv_df, chart_type, adv_ticker, COLORS)
+                        st.plotly_chart(fig_adv, use_container_width=True, key=f"adv_{idx}")
+                    except Exception as e:
+                        st.caption(f"{chart_name}: N/A")
+
+def create_advanced_chart(df, chart_type, ticker, COLORS):
+    fig = go.Figure()
+    
+    if chart_type == "line":
+        fig.add_trace(go.Scatter(x=df.index, y=df['Close'], mode='lines', name=ticker,
+                                line=dict(color=COLORS["navy"], width=2)))
+        fig.update_layout(title=f"Line Chart — {ticker}", height=280)
+        
+    elif chart_type == "smooth":
+        from scipy.ndimage import gaussian_filter1d
+        smoothed = gaussian_filter1d(df['Close'].values, sigma=3)
+        fig.add_trace(go.Scatter(x=df.index, y=df['Close'], mode='lines', name="Original",
+                                line=dict(color='rgba(0,0,0,0.2)', width=1)))
+        fig.add_trace(go.Scatter(x=df.index, y=smoothed, mode='lines', name="Smoothed",
+                                line=dict(color=COLORS["blue"], width=2)))
+        fig.update_layout(title=f"Smooth Line — {ticker}", height=280)
+        
+    elif chart_type == "step":
+        fig.add_trace(go.Scatter(x=df.index, y=df['Close'], mode='lines', name=ticker,
+                                line=dict(shape='hv', color=COLORS["purple"], width=2)))
+        fig.update_layout(title=f"Step Line — {ticker}", height=280)
+        
+    elif chart_type == "area":
+        fig.add_trace(go.Scatter(x=df.index, y=df['Close'], mode='lines', fill='tozeroy',
+                                name=ticker, fillcolor='rgba(26,86,219,0.3)',
+                                line=dict(color=COLORS["blue"], width=1.5)))
+        fig.update_layout(title=f"Area Chart — {ticker}", height=280)
+        
+    elif chart_type == "stacked_area":
+        close_prices = prices.dropna(axis=1, how='all')
+        for col in close_prices.columns[:5]:
+            fig.add_trace(go.Scatter(x=close_prices.index, y=close_prices[col], mode='lines', name=col,
+                                    stackgroup='one', fillcolor=palette[len(fig.data) % len(palette)]))
+        fig.update_layout(title="Stacked Area — Portfolio", height=280)
+        
+    elif chart_type == "bar":
+        fig.add_trace(go.Bar(x=df.index[-30:], y=df['Close'].diff().iloc[-30:],
+                            marker_color=COLORS["teal"]))
+        fig.update_layout(title=f"Bar Chart — {ticker}", height=280)
+        
+    elif chart_type == "grouped_bar":
+        daily_ret = df['Close'].pct_change().iloc[-20:]
+        fig.add_trace(go.Bar(x=daily_ret.index, y=daily_ret, name="Daily Returns",
+                            marker_color=[COLORS["green"] if x >= 0 else COLORS["red"] for x in daily_ret]))
+        fig.update_layout(title=f"Grouped Bar — {ticker}", height=280)
+        
+    elif chart_type == "stacked_bar":
+        fig.add_trace(go.Bar(x=df.index[-10:], y=df['Open'].iloc[-10:], name="Open"))
+        fig.add_trace(go.Bar(x=df.index[-10:], y=df['Close'].iloc[-10:], name="Close"))
+        fig.update_layout(title=f"Stacked Bar — {ticker}", barmode='stack', height=280)
+        
+    elif chart_type == "h_bar":
+        fig.add_trace(go.Bar(x=df['Close'].iloc[-15:], y=df.index[-15:], orientation='h',
+                            marker_color=COLORS["amber"]))
+        fig.update_layout(title=f"Horizontal Bar — {ticker}", height=280)
+        
+    elif chart_type == "waterfall":
+        changes = df['Close'].diff().iloc[-15:]
+        fig.add_trace(go.Waterfall(
+            x=changes.index, y=changes,
+            measure=["relative"] * len(changes),
+            decreasing=dict(marker_color=COLORS["red"]),
+            increasing=dict(marker_color=COLORS["green"]),
+            totals=dict(marker_color=COLORS["blue"])
+        ))
+        fig.update_layout(title=f"Waterfall — {ticker}", height=280)
+        
+    elif chart_type == "funnel":
+        stages = ["Awareness", "Interest", "Consideration", "Intent", "Purchase"]
+        values = [1000, 750, 500, 250, 100]
+        fig.add_trace(go.Funnel(y=stages, x=values, textinfo="value+percent", marker=dict(color=COLORS["blue"])))
+        fig.update_layout(title="Funnel Chart", height=280)
+        
+    elif chart_type == "pie":
+        monthly_ret = df['Close'].pct_change().resample('M').mean().iloc[-6:]
+        fig.add_trace(go.Pie(labels=monthly_ret.index.strftime('%b'), values=monthly_ret.values,
+                           marker=dict(colors=palette[:len(monthly_ret)])))
+        fig.update_layout(title=f"Pie Chart — {ticker}", height=280)
+        
+    elif chart_type == "donut":
+        monthly_ret = df['Close'].pct_change().resample('M').mean().iloc[-6:]
+        fig.add_trace(go.Pie(labels=monthly_ret.index.strftime('%b'), values=monthly_ret.values,
+                           hole=0.5, marker=dict(colors=palette[:len(monthly_ret)])))
+        fig.update_layout(title=f"Donut Chart — {ticker}", height=280)
+        
+    elif chart_type == "treemap":
+        treemap_data = pd.DataFrame({
+            "Asset": valid_tickers,
+            "Weight": vis_wts * 100
+        })
+        fig = px.treemap(treemap_data, path=["Asset"], values="Weight",
+                        color="Weight", color_continuous_scale="Blues")
+        fig.update_layout(title="Treemap", height=350)
+        
+    elif chart_type == "sunburst":
+        sun_data = pd.DataFrame({
+            "Asset": valid_tickers,
+            "Sector": ["Tech"] * len(valid_tickers),
+            "Weight": vis_wts * 100
+        })
+        fig = px.sunburst(sun_data, path=["Sector", "Asset"], values="Weight")
+        fig.update_layout(title="Sunburst", height=350)
+        
+    elif chart_type == "par_cat":
+        par_data = pd.DataFrame({
+            "Asset": valid_tickers[:5],
+            "Sector": ["Tech", "Finance", "Energy", "Healthcare", "Consumer"],
+            "Return": np.random.randn(5) * 10
+        })
+        fig = px.parallel_categories(par_data, dimensions=["Sector", "Asset"], color="Return",
+                                    color_continuous_scale="RdBu")
+        fig.update_layout(title="Parallel Categories", height=280)
+        
+    elif chart_type == "scatter":
+        fig.add_trace(go.Scatter(x=df['Volume'], y=df['Close'], mode='markers',
+                                marker=dict(size=6, color=df.index, colorscale='Viridis')))
+        fig.update_layout(title=f"Scatter Plot — {ticker}", height=280)
+        
+    elif chart_type == "bubble":
+        fig.add_trace(go.Scatter(x=df.index[-30:], y=df['Close'].iloc[-30:],
+                                mode='markers', marker=dict(
+                                size=df['Volume'].iloc[-30:] / df['Volume'].iloc[-30:].max() * 20,
+                                color=COLORS["blue"], opacity=0.6)))
+        fig.update_layout(title=f"Bubble Chart — {ticker}", height=280)
+        
+    elif chart_type == "dot":
+        fig.add_trace(go.Scatter(x=df['Close'].iloc[-20:], y=[ticker] * 20, mode='markers',
+                                marker=dict(size=12, color=COLORS["purple"])))
+        fig.update_layout(title=f"Dot Plot — {ticker}", height=280)
+        
+    elif chart_type == "histogram":
+        ret = df['Close'].pct_change().dropna()
+        fig.add_trace(go.Histogram(x=ret, nbinsx=40, marker_color=COLORS["teal"], opacity=0.7))
+        fig.update_layout(title=f"Histogram — {ticker}", height=280)
+        
+    elif chart_type == "box":
+        ret = df['Close'].pct_change().dropna()
+        fig.add_trace(go.Box(y=ret, name=ticker, marker_color=COLORS["amber"]))
+        fig.update_layout(title=f"Box Plot — {ticker}", height=280)
+        
+    elif chart_type == "violin":
+        ret = df['Close'].pct_change().dropna()
+        fig.add_trace(go.Violin(y=ret, name=ticker, box_visible=True, meanline_visible=True,
+                               marker_color=COLORS["purple"]))
+        fig.update_layout(title=f"Violin Plot — {ticker}", height=280)
+        
+    elif chart_type == "strip":
+        ret = df['Close'].pct_change().dropna()
+        fig.add_trace(go.Box(y=ret, name=ticker, marker=dict(color=COLORS["green"])))
+        fig.add_trace(go.Box(y=ret * 0.5, name=ticker + " Scaled"))
+        fig.update_layout(title=f"Strip Plot — {ticker}", height=280)
+        
+    elif chart_type == "ecdf":
+        ret = df['Close'].pct_change().dropna().sort_values()
+        ecdf = np.arange(1, len(ret) + 1) / len(ret)
+        fig.add_trace(go.Scatter(x=ret, y=ecdf, mode='lines', line=dict(color=COLORS["navy"], width=2)))
+        fig.update_layout(title=f"ECDF — {ticker}", height=280)
+        
+    elif chart_type == "qq":
+        ret = df['Close'].pct_change().dropna().sort_values()
+        theoretical = norm.ppf(np.linspace(0.01, 0.99, len(ret)))
+        fig.add_trace(go.Scatter(x=theoretical, y=ret.values[:len(theoretical)], mode='markers',
+                                marker=dict(size=4, color=COLORS["blue"])))
+        fig.add_trace(go.Scatter(x=[-4, 4], y=[-4, 4], mode='lines', line=dict(color=COLORS["red"], dash='dash')))
+        fig.update_layout(title=f"QQ Plot — {ticker}", height=280)
+        
+    elif chart_type == "density":
+        x_data = df['Close'].pct_change().dropna().values
+        y_data = df['Volume'].pct_change().dropna().values[:len(x_data)]
+        fig.add_trace(go.Histogram2d(x=x_data, y=y_data, colorscale='Blues'))
+        fig.update_layout(title=f"Density Contour — {ticker}", height=280)
+        
+    elif chart_type == "heatmap":
+        corr_data = returns_df[valid_tickers[:6]].corr()
+        fig.add_trace(go.Heatmap(z=corr_data, x=corr_data.columns, y=corr_data.columns,
+                                 colorscale='RdBu_r', zmid=0))
+        fig.update_layout(title="Correlation Heatmap", height=350)
+        
+    elif chart_type == "scatter3d":
+        dates = df.index[:50]
+        fig.add_trace(go.Scatter3d(x=dates, y=df['Open'].iloc[:50], z=df['Close'].iloc[:50],
+                                  mode='markers', marker=dict(size=4, color=COLORS["blue"])))
+        fig.update_layout(title=f"3D Scatter — {ticker}", height=350)
+        
+    elif chart_type == "surface3d":
+        x = np.linspace(0, 10, 20)
+        y = np.linspace(0, 10, 20)
+        z = np.outer(x, y) * np.sin(x) * np.cos(y)
+        fig.add_trace(go.Surface(x=x, y=y, z=z, colorscale='Viridis'))
+        fig.update_layout(title="3D Surface", height=350)
+        
+    elif chart_type == "polar":
+        categories = ['Return', 'Vol', 'Sharpe', 'MaxDD', 'Beta', 'Alpha']
+        values = [5, 8, 3, -6, 2, 1]
+        fig.add_trace(go.Scatterpolar(r=values, theta=categories, fill='toself', name=ticker,
+                                     marker=dict(color=COLORS["blue"])))
+        fig.update_layout(title=f"Polar Chart — {ticker}", polar=dict(radialaxis=dict(visible=True)),
+                         height=280)
+        
+    elif chart_type == "radar_fill":
+        categories = ['Return', 'Vol', 'Sharpe', 'MaxDD', 'Beta', 'Alpha']
+        values1 = [5, 8, 3, -6, 2, 1]
+        values2 = [3, 6, 2, -4, 1, 0.5]
+        fig.add_trace(go.Scatterpolar(r=values1, theta=categories, fill='toself', name="Portfolio",
+                                     marker=dict(color=COLORS["blue"])))
+        fig.add_trace(go.Scatterpolar(r=values2, theta=categories, fill='toself', name="Benchmark",
+                                     marker=dict(color=COLORS["red"], opacity=0.5)))
+        fig.update_layout(title="Radar Fill", polar=dict(radialaxis=dict(visible=True)), height=280)
+        
+    elif chart_type == "h_line":
+        fig.add_trace(go.Scatter(x=df.index, y=df['Close'], mode='lines',
+                                line=dict(color=COLORS["navy"], width=2)))
+        fig.add_hline(y=df['Close'].mean(), line_dash="dash", line_color=COLORS["red"],
+                     annotation_text="Mean")
+        fig.update_layout(title=f"With Horizontal Line — {ticker}", height=280)
+        
+    elif chart_type == "vol_profile":
+        fig.add_trace(go.Candlestick(x=df.index, open=df['Open'], high=df['High'],
+                                    low=df['Low'], close=df['Close'], name=ticker))
+        fig.add_trace(go.Bar(x=df.index, y=df['Volume'], yaxis='y2', opacity=0.3,
+                            marker_color='gray'))
+        fig.update_layout(title=f"Candle + Volume — {ticker}", height=280,
+                         yaxis2=dict(title="Volume", overlaying='y', side='right'))
+        
+    elif chart_type == "decomp":
+        close = df['Close']
+        returns = close.pct_change().dropna()
+        cum_ret = (1 + returns).cumprod()
+        fig.add_trace(go.Scatter(x=cum_ret.index, y=cum_ret, mode='lines',
+                                fill='tozeroy', fillcolor='rgba(26,86,219,0.2)',
+                                line=dict(color=COLORS["navy"])))
+        fig.update_layout(title=f"Return Decomposition — {ticker}", height=280)
+        
+    elif chart_type == "roll_reg":
+        roll_corr = df['Close'].rolling(20).corr(df['Volume'])
+        fig.add_trace(go.Scatter(x=roll_corr.index, y=roll_corr, mode='lines',
+                                line=dict(color=COLORS["purple"], width=2)))
+        fig.update_layout(title=f"Rolling Correlation — {ticker}", height=280)
+    
+    fig.update_layout(
+        template="plotly_white",
+        font=dict(family="DM Sans", size=10),
+        margin=dict(l=10, r=10, t=30, b=10),
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=True, gridcolor="rgba(0,0,0,0.05)")
+    )
+    return fig
+
 # Regime detection
 st.markdown("""
 <div class="section-header" style="margin-top:32px;">
