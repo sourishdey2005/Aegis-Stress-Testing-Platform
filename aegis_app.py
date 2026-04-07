@@ -2004,7 +2004,7 @@ else:
             values=vis_wts_arr,
             hole=0.4,
             textinfo='label+percent',
-            marker=dict(colors=palette[:len(valid_tickers)])
+            marker=dict(colors=PALETTE[:len(valid_tickers)])
         )])
         fig_pie.update_layout(title="Current Asset Allocation", height=400, **PLOT_TEMPLATE["layout"])
         st.plotly_chart(fig_pie, use_container_width=True, key="pie_chart")
@@ -2022,7 +2022,7 @@ else:
             hole=0.65,
             direction='clockwise',
             sort=False,
-            marker=dict(colors=palette[:len(valid_tickers)])
+            marker=dict(colors=PALETTE[:len(valid_tickers)])
         ))
         fig_donut.update_layout(title="Donut Chart — Portfolio Composition", height=350, **PLOT_TEMPLATE["layout"])
         st.plotly_chart(fig_donut, use_container_width=True, key="donut_chart")
@@ -2034,7 +2034,7 @@ else:
             hole=0.65,
             direction='clockwise',
             sort=False,
-            marker=dict(colors=palette[:len(valid_tickers)])
+            marker=dict(colors=PALETTE[:len(valid_tickers)])
         ))
         fig_pie.update_layout(title="Current Asset Allocation", height=400, **PLOT_TEMPLATE["layout"])
         st.plotly_chart(fig_pie, use_container_width=True)
@@ -2052,7 +2052,7 @@ else:
             hole=0.65,
             direction='clockwise',
             sort=False,
-            marker=dict(colors=palette[:len(valid_tickers)])
+            marker=dict(colors=PALETTE[:len(valid_tickers)])
         ))
         fig_donut.update_layout(title="Donut Chart — Portfolio Composition", height=350, **PLOT_TEMPLATE["layout"])
         st.plotly_chart(fig_donut, use_container_width=True)
