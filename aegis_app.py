@@ -115,15 +115,15 @@ html, body, [class*="css"] {
 .aegis-nav-link {
     padding: 8px 16px;
     border-radius: 6px;
-    background: rgba(26, 86, 219, 0.1);
-    color: var(--accent-blue);
+    background: rgba(13, 27, 42, 0.1);
+    color: #0D1B2A;
     cursor: pointer;
     transition: all 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 .aegis-nav-link:hover {
-    background: var(--accent-blue);
+    background: #0D1B2A;
     color: white;
 }
 .aegis-status {
@@ -158,18 +158,18 @@ html, body, [class*="css"] {
     font-weight: 600;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--accent-blue);
+    color: #0D1B2A;
     margin-bottom: 6px;
 }
 .section-title {
     font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.5px;
-    color: var(--text-primary);
+    color: #0D1B2A;
 }
 .section-subtitle {
     font-size: 13px;
-    color: var(--text-muted);
+    color: #4A5568;
     margin-top: 4px;
 }
 
@@ -851,7 +851,7 @@ with price_tab2:
         ohlc_df = ohlc_data.copy()
         
         if isinstance(ohlc_df.columns, pd.MultiIndex):
-            ohlc_df.columns = [c[1] if len(c) > 1 else c[0] for c in ohlc_df.columns]
+            ohlc_df.columns = ohlc_df.columns.get_level_values(0)
         
         if 'Close' in ohlc_df.columns:
             ohlc_df = ohlc_df[['Open', 'High', 'Low', 'Close', 'Volume']]
@@ -928,10 +928,7 @@ with price_tab3:
         vol_data = yf.download(tech_ticker, period=data_period, progress=False)
         if vol_data is not None and not vol_data.empty:
             if isinstance(vol_data.columns, pd.MultiIndex):
-                try:
-                    vol_data = vol_data.xs(tech_ticker, axis=1)
-                except:
-                    vol_data = vol_data.droplevel(0, axis=1) if hasattr(vol_data.columns, 'droplevel') else vol_data
+                vol_data.columns = vol_data.columns.get_level_values(0)
             if 'Volume' in vol_data.columns and 'Close' in vol_data.columns:
                 vol_colors = ["green" if vol_data['Close'].iloc[i] >= vol_data['Open'].iloc[i] else "red" 
                               for i in range(len(vol_data))]
@@ -1057,10 +1054,7 @@ with price_tab6:
     if candle_data is not None and not candle_data.empty:
         candle_df = candle_data.copy()
         if isinstance(candle_df.columns, pd.MultiIndex):
-            try:
-                candle_df = candle_df.xs(candle_ticker, axis=1)
-            except:
-                candle_df = candle_df.droplevel(0, axis=1) if hasattr(candle_df.columns, 'droplevel') else candle_df
+            candle_df.columns = candle_df.columns.get_level_values(0)
         
         if 'Close' in candle_df.columns:
             candle_df = candle_df[['Open', 'High', 'Low', 'Close', 'Volume']]
@@ -1328,10 +1322,7 @@ with price_tab7:
     if adv_data is not None and not adv_data.empty:
         adv_df = adv_data.copy()
         if isinstance(adv_df.columns, pd.MultiIndex):
-            try:
-                adv_df = adv_df.xs(adv_ticker, axis=1)
-            except:
-                adv_df = adv_df.droplevel(0, axis=1) if hasattr(adv_df.columns, 'droplevel') else adv_df
+            adv_df.columns = adv_df.columns.get_level_values(0)
         
         if 'Close' in adv_df.columns:
             adv_df = adv_df[['Open', 'High', 'Low', 'Close', 'Volume']]
