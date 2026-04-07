@@ -1990,7 +1990,7 @@ else:
         st.plotly_chart(fig_3d, use_container_width=True)
 
     with sim_tab5:
-        vis_wts_arr = vis_wts
+        vis_wts_arr = np.ones(len(valid_tickers)) / len(valid_tickers) * 100
         fig_pie = go.Figure(data=[go.Pie(
             labels=valid_tickers,
             values=vis_wts_arr,
