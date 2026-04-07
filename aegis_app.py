@@ -39,8 +39,8 @@ st.markdown("""
     --border-color: #E2E8F0;
     --border-accent: #C8D8F0;
     --text-primary: #0D1B2A;
-    --text-secondary: #4A5568;
-    --text-muted: #718096;
+    --text-secondary: #0D1B2A;
+    --text-muted: #0D1B2A;
     --accent-blue: #1A56DB;
     --accent-navy: #0F3460;
     --accent-teal: #0EA5E9;
@@ -169,7 +169,7 @@ html, body, [class*="css"] {
 }
 .section-subtitle {
     font-size: 13px;
-    color: #4A5568;
+    color: #0D1B2A;
     margin-top: 4px;
 }
 
@@ -265,7 +265,7 @@ html, body, [class*="css"] {
 }
 .info-box-text {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: #0D1B2A;
     line-height: 1.6;
 }
 
@@ -685,6 +685,7 @@ COLORS = {
     "purple": "#7C3AED",
     "gray":   "#6B7280",
 }
+PALETTE = [COLORS["blue"], COLORS["red"], COLORS["green"], COLORS["purple"], COLORS["amber"], COLORS["teal"]]
 
 
 def apply_theme(fig):
@@ -807,6 +808,9 @@ if prices.empty:
 
 valid_tickers = list(prices.columns)
 returns_df    = compute_returns(prices)
+N_ASSETS      = len(valid_tickers)
+VIS_WTS       = np.ones(N_ASSETS) / N_ASSETS if N_ASSETS > 0 else np.array([1.0])
+PALETTE       = [COLORS["blue"], COLORS["red"], COLORS["green"], COLORS["purple"], COLORS["amber"], COLORS["teal"]]
 
 # Live quotes row
 quote_cols = st.columns(min(len(valid_tickers), 6))
@@ -831,12 +835,11 @@ price_tab1, price_tab2, price_tab3, price_tab4, price_tab5, price_tab6, price_ta
 
 with price_tab1:
     fig_price = go.Figure()
-    palette = [COLORS["blue"], COLORS["red"], COLORS["green"], COLORS["purple"], COLORS["amber"], COLORS["teal"]]
     norm_prices = prices / prices.iloc[0] * 100
     for i, tkr in enumerate(valid_tickers):
         fig_price.add_trace(go.Scatter(
             x=norm_prices.index, y=norm_prices[tkr],
-            name=tkr, line=dict(width=1.8, color=palette[i % len(palette)]),
+            name=tkr, line=dict(width=1.8, color=PALETTE[i % len(PALETTE)]),
             mode="lines"
         ))
     fig_price.update_layout(title="Normalized Price Performance (Base=100)",
@@ -978,37 +981,36 @@ with price_tab5:
     for i, tkr in enumerate(valid_tickers[:4]):
         roll_vol = returns_df[tkr].rolling(vol_window).std() * np.sqrt(252) * 100
         fig_risk.add_trace(go.Scatter(x=roll_vol.index, y=roll_vol, name=tkr,
-                                      line=dict(width=1.5, color=palette[i])), row=1, col=1)
+                                      line=dict(width=1.5, color=PALETTE[i])), row=1, col=1)
     
     for i, tkr in enumerate(valid_tickers[:4]):
         cum_ret = (1 + returns_df[tkr]).cumprod()
         fig_risk.add_trace(go.Scatter(x=cum_ret.index, y=cum_ret, name=tkr,
-                                      line=dict(width=1.5, color=palette[i])), row=1, col=2)
+                                      line=dict(width=1.5, color=PALETTE[i])), row=1, col=2)
     
     for i, tkr in enumerate(valid_tickers[:4]):
         cum_ret = (1 + returns_df[tkr]).cumprod()
         roll_max = cum_ret.cummax()
         drawdown = (cum_ret - roll_max) / roll_max * 100
         fig_risk.add_trace(go.Scatter(x=drawdown.index, y=drawdown, name=tkr,
-                                      line=dict(width=1.5, color=palette[i])), row=2, col=1)
+                                      line=dict(width=1.5, color=PALETTE[i])), row=2, col=1)
     
     for i, tkr in enumerate(valid_tickers[:4]):
         ret_data = returns_df[tkr].dropna()
         fig_risk.add_trace(go.Box(y=ret_data, name=tkr, 
-                                  marker_color=palette[i], 
+                                  marker_color=PALETTE[i], 
                                   boxpoints=False), row=2, col=2)
     
     fig_risk.update_layout(height=600, showlegend=False, **PLOT_TEMPLATE["layout"])
     st.plotly_chart(fig_risk, use_container_width=True)
 
-    n_assets = len(valid_tickers)
-    vis_wts = np.ones(n_assets) / n_assets if n_assets > 0 else np.array([1.0])
+    N_ASSETS = len(valid_tickers)
     
     st.markdown("**📊 Treemap — Portfolio Weight Distribution**")
     treemap_data = pd.DataFrame({
         "Asset": valid_tickers,
-        "Weight": vis_wts * 100,
-        "Color": palette[:len(valid_tickers)]
+        "Weight": VIS_WTS * 100,
+        "Color": PALETTE[:len(valid_tickers)]
     })
     fig_tree = px.treemap(treemap_data, path=["Asset"], values="Weight",
                           color="Weight", color_continuous_scale="Blues")
@@ -1037,7 +1039,7 @@ with price_tab5:
             theta=["Return", "Volatility", "Sharpe", "Max DD", "Skew", "Kurt", "Return"],
             fill='toself',
             name=row["Asset"],
-            line_color=palette[i]
+            line_color=PALETTE[i]
         ))
     fig_radar.update_layout(
         polar=dict(radialaxis=dict(visible=True)),
@@ -1319,15 +1321,18 @@ with price_tab7:
     adv_ticker = st.selectbox("Select Ticker for Advanced Charts", valid_tickers, key="adv_chart_sel")
     adv_data = yf.download(adv_ticker, period=data_period, progress=False)
     
-    if adv_data is not None and not adv_data.empty:
+    if adv_data is not None and len(adv_data) > 0:
         adv_df = adv_data.copy()
         if isinstance(adv_df.columns, pd.MultiIndex):
-            adv_df.columns = adv_df.columns.get_level_values(0)
+            adv_df.columns = [c[1] if len(c) > 1 else c[0] for c in adv_df.columns]
         
         if 'Close' in adv_df.columns:
             adv_df = adv_df[['Open', 'High', 'Low', 'Close', 'Volume']]
             
             st.markdown("### 📊 30+ Advanced Chart Types")
+            
+            PALETTE = ["#1A56DB", "#DC2626", "#059669", "#7C3AED", "#D97706", "#0EA5E9"]
+            vis_wts_arr = np.ones(len(valid_tickers)) / len(valid_tickers) * 100
             
             adv_charts = [
                 ("1️⃣ Line Chart", "line"),
@@ -1371,13 +1376,20 @@ with price_tab7:
             for idx, (chart_name, chart_type) in enumerate(adv_charts):
                 with chart_cols[idx % 2]:
                     try:
-                        fig_adv = create_advanced_chart(adv_df, chart_type, adv_ticker, COLORS)
+                        fig_adv = create_advanced_chart(adv_df, chart_type, adv_ticker, COLORS, valid_tickers, prices)
                         st.plotly_chart(fig_adv, use_container_width=True, key=f"adv_{idx}")
                     except Exception as e:
                         st.caption(f"{chart_name}: N/A")
 
-def create_advanced_chart(df, chart_type, ticker, COLORS):
+def create_advanced_chart(df, chart_type, ticker, COLORS, tickers_list=None, prices_df=None):
     fig = go.Figure()
+    if tickers_list is None:
+        tickers_list = [ticker]
+    if prices_df is None:
+        prices_df = df
+    
+    PALETTE = ["#1A56DB", "#DC2626", "#059669", "#7C3AED", "#D97706", "#0EA5E9"]
+    vis_wts = np.ones(len(tickers_list)) / len(tickers_list) * 100
     
     if chart_type == "line":
         fig.add_trace(go.Scatter(x=df.index, y=df['Close'], mode='lines', name=ticker,
@@ -1408,7 +1420,7 @@ def create_advanced_chart(df, chart_type, ticker, COLORS):
         close_prices = prices.dropna(axis=1, how='all')
         for col in close_prices.columns[:5]:
             fig.add_trace(go.Scatter(x=close_prices.index, y=close_prices[col], mode='lines', name=col,
-                                    stackgroup='one', fillcolor=palette[len(fig.data) % len(palette)]))
+                                    stackgroup='one', fillcolor=PALETTE[len(fig.data) % len(PALETTE)]))
         fig.update_layout(title="Stacked Area — Portfolio", height=280)
         
     elif chart_type == "bar":
@@ -1452,19 +1464,19 @@ def create_advanced_chart(df, chart_type, ticker, COLORS):
     elif chart_type == "pie":
         monthly_ret = df['Close'].pct_change().resample('M').mean().iloc[-6:]
         fig.add_trace(go.Pie(labels=monthly_ret.index.strftime('%b'), values=monthly_ret.values,
-                           marker=dict(colors=palette[:len(monthly_ret)])))
+                           marker=dict(colors=PALETTE[:len(monthly_ret)])))
         fig.update_layout(title=f"Pie Chart — {ticker}", height=280)
         
     elif chart_type == "donut":
         monthly_ret = df['Close'].pct_change().resample('M').mean().iloc[-6:]
         fig.add_trace(go.Pie(labels=monthly_ret.index.strftime('%b'), values=monthly_ret.values,
-                           hole=0.5, marker=dict(colors=palette[:len(monthly_ret)])))
+                           hole=0.5, marker=dict(colors=PALETTE[:len(monthly_ret)])))
         fig.update_layout(title=f"Donut Chart — {ticker}", height=280)
         
     elif chart_type == "treemap":
         treemap_data = pd.DataFrame({
             "Asset": valid_tickers,
-            "Weight": vis_wts * 100
+            "Weight": VIS_WTS * 100
         })
         fig = px.treemap(treemap_data, path=["Asset"], values="Weight",
                         color="Weight", color_continuous_scale="Blues")
@@ -1474,7 +1486,7 @@ def create_advanced_chart(df, chart_type, ticker, COLORS):
         sun_data = pd.DataFrame({
             "Asset": valid_tickers,
             "Sector": ["Tech"] * len(valid_tickers),
-            "Weight": vis_wts * 100
+            "Weight": VIS_WTS * 100
         })
         fig = px.sunburst(sun_data, path=["Sector", "Asset"], values="Weight")
         fig.update_layout(title="Sunburst", height=350)
@@ -1978,7 +1990,7 @@ else:
         st.plotly_chart(fig_3d, use_container_width=True)
 
     with sim_tab5:
-        vis_wts_arr = vis_wts * 100
+        vis_wts_arr = vis_wts
         fig_pie = go.Figure(data=[go.Pie(
             labels=valid_tickers,
             values=vis_wts_arr,
