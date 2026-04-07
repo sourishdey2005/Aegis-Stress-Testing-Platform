@@ -445,28 +445,6 @@ div[data-testid="stMetricValue"] {
 """, unsafe_allow_html=True)
 
 
-# ─── NAVBAR ─────────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="aegis-navbar">
-    <div class="aegis-navbar-brand">
-        <div class="aegis-logo">🛡️</div>
-        <span class="aegis-brand-text">Aegis Risk Lab</span>
-    </div>
-    <div class="aegis-nav-links">
-        <div class="aegis-nav-link">Data Engine</div>
-        <div class="aegis-nav-link">Scenario Generator</div>
-        <div class="aegis-nav-link">Simulation</div>
-        <div class="aegis-nav-link">Analytics</div>
-        <div class="aegis-nav-link">Export</div>
-    </div>
-    <div class="aegis-status">
-        <div class="aegis-status-dot"></div>
-        <span>System Online</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-
 # ─── HELPERS & ENGINES ───────────────────────────────────────────────────────
 
 @st.cache_data(ttl=300, show_spinner=False)
