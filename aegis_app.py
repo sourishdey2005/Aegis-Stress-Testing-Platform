@@ -812,8 +812,8 @@ for i, tkr in enumerate(valid_tickers[:6]):
         """, unsafe_allow_html=True)
 
 # Price chart with multiple visualizations
-price_tab1, price_tab2, price_tab3, price_tab4, price_tab5, price_tab6 = st.tabs([
-    "📈 Price History", "🕯️ Candlestick", "📊 Technicals", "🔗 Correlation", "📉 Risk Metrics", "🕯️ Candle Variants"
+price_tab1, price_tab2, price_tab3, price_tab4, price_tab5, price_tab6, price_tab7 = st.tabs([
+    "📈 Price History", "🕯️ Candlestick", "📊 Technicals", "🔗 Correlation", "📉 Risk Metrics", "🕯️ Candle Variants", "📊 Advanced Charts"
 ])
 
 with price_tab1:
@@ -833,43 +833,58 @@ with price_tab1:
 with price_tab2:
     ohlc_ticker = st.selectbox("Select Ticker for Candlestick", valid_tickers, key="ohlc_sel")
     ohlc_data = yf.download(ohlc_ticker, period=data_period, progress=False)
-    if ohlc_data is not None and not ohlc_data.empty:
+    
+    if ohlc_data is not None and len(ohlc_data) > 0:
         ohlc_df = ohlc_data.copy()
         if isinstance(ohlc_df.columns, pd.MultiIndex):
             try:
                 ohlc_df = ohlc_df.xs(ohlc_ticker, axis=1)
             except:
-                ohlc_df = ohlc_df.droplevel(0, axis=1) if hasattr(ohlc_df.columns, 'droplevel') else ohlc_df
+                try:
+                    ohlc_df = ohlc_df.droplevel(0, axis=1)
+                except:
+                    ohlc_df = ohlc_df.iloc[:, :5]
         
-        if 'Close' in ohlc_df.columns:
-            try:
-                ohlc_df = ohlc_df[['Open', 'High', 'Low', 'Close', 'Volume']]
-            except:
-                pass
-            
-            fig_candle = go.Figure()
-            fig_candle.add_trace(go.Candlestick(
-                x=ohlc_df.index,
-                open=ohlc_df['Open'], high=ohlc_df['High'],
-                low=ohlc_df['Low'], close=ohlc_df['Close'],
-                name=ohlc_ticker,
-                increasing_line_color=COLORS["green"],
-                decreasing_line_color=COLORS["red"]
-            ))
-            sma_20 = ohlc_df['Close'].rolling(20).mean()
-            ema_12 = ohlc_df['Close'].ewm(span=12).mean()
-            fig_candle.add_trace(go.Scatter(x=sma_20.index, y=sma_20, name="SMA 20", line=dict(color=COLORS["blue"], width=1.5)))
-            fig_candle.add_trace(go.Scatter(x=ema_12.index, y=ema_12, name="EMA 12", line=dict(color=COLORS["purple"], width=1.5)))
-            fig_candle.update_layout(title=f"Candlestick Chart — {ohlc_ticker}", height=480, **PLOT_TEMPLATE["layout"])
-            fig_candle.update_layout(xaxis_rangeslider_visible=False)
-            st.plotly_chart(fig_candle, use_container_width=True)
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Latest Close", f"${ohlc_df['Close'].iloc[-1]:,.2f}", 
-                         f"{((ohlc_df['Close'].iloc[-1] / ohlc_df['Close'].iloc[-2]) - 1) * 100:.2f}%")
-            with col2:
-                st.metric("Volume", f"{ohlc_df['Volume'].iloc[-1]:,.0f}")
+        available_cols = list(ohlc_df.columns)
+        if 'Close' in available_cols:
+            cols_needed = ['Open', 'High', 'Low', 'Close', 'Volume']
+            existing = [c for c in cols_needed if c in available_cols]
+            if existing:
+                ohlc_df = ohlc_df[existing]
+                
+                fig_candle = go.Figure()
+                fig_candle.add_trace(go.Candlestick(
+                    x=ohlc_df.index,
+                    open=ohlc_df['Open'] if 'Open' in ohlc_df.columns else ohlc_df['Close'],
+                    high=ohlc_df['High'] if 'High' in ohlc_df.columns else ohlc_df['Close'],
+                    low=ohlc_df['Low'] if 'Low' in ohlc_df.columns else ohlc_df['Close'],
+                    close=ohlc_df['Close'],
+                    name=ohlc_ticker,
+                    increasing_line_color=COLORS["green"],
+                    decreasing_line_color=COLORS["red"]
+                ))
+                
+                if 'Close' in ohlc_df.columns:
+                    sma_20 = ohlc_df['Close'].rolling(20).mean()
+                    ema_12 = ohlc_df['Close'].ewm(span=12).mean()
+                    fig_candle.add_trace(go.Scatter(x=sma_20.index, y=sma_20, name="SMA 20", line=dict(color=COLORS["blue"], width=1.5)))
+                    fig_candle.add_trace(go.Scatter(x=ema_12.index, y=ema_12, name="EMA 12", line=dict(color=COLORS["purple"], width=1.5)))
+                
+                fig_candle.update_layout(title="Candlestick Chart - " + ohlc_ticker, height=480)
+                fig_candle.update_layout(xaxis_rangeslider_visible=False)
+                st.plotly_chart(fig_candle, use_container_width=True, key="candle_main")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Latest Close", f"${ohlc_df['Close'].iloc[-1]:,.2f}", 
+                             f"{((ohlc_df['Close'].iloc[-1] / ohlc_df['Close'].iloc[-2]) - 1) * 100:.2f}%")
+                with col2:
+                    if 'Volume' in ohlc_df.columns:
+                        st.metric("Volume", f"{ohlc_df['Volume'].iloc[-1]:,.0f}")
+        else:
+            st.warning("No price data available for " + ohlc_ticker)
+    else:
+        st.warning("No data available for " + ohlc_ticker)
 
 with price_tab3:
     tech_ticker = st.selectbox("Select Ticker for Technicals", valid_tickers, key="tech_sel")
@@ -1304,8 +1319,6 @@ def create_candle_variant(df, variant_type, ticker, COLORS):
     return fig
 
 # ── Advanced Charts Tab ──────────────────────────────────────────────────
-price_tab7 = st.tabs(["📈 Price History", "🕯️ Candlestick", "📊 Technicals", "🔗 Correlation", "📉 Risk Metrics", "🕯️ Candle Variants", "📊 Advanced Charts"])
-
 with price_tab7:
     adv_ticker = st.selectbox("Select Ticker for Advanced Charts", valid_tickers, key="adv_chart_sel")
     adv_data = yf.download(adv_ticker, period=data_period, progress=False)
