@@ -2509,9 +2509,9 @@ else:
     # ─── CANDLESTICK PATTERN ANALYSIS ────────────────────────────────────────────────
     st.markdown("""
     <div class="section-header">
-        <div class="section-tag">MODULE 06</div>
-        <div class="section-title">Candlestick Pattern Analyzer</div>
-        <div class="section-subtitle">AI-Powered Candlestick Pattern Recognition & Signal Generation</div>
+        <div class="section-tag" style="color:#000000;">MODULE 06</div>
+        <div class="section-title" style="color:#000000;">Candlestick Pattern Analyzer</div>
+        <div class="section-subtitle" style="color:#000000;">AI-Powered Candlestick Pattern Recognition & Signal Generation</div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -2543,6 +2543,7 @@ else:
             
             pattern_expander = st.expander("📊 Show All 10 Candlestick Patterns", expanded=False)
             with pattern_expander:
+                st.markdown('<div style="color:#000000;">', unsafe_allow_html=True)
                 render_patterns = st.toggle(
                     "Render pattern charts",
                     value=False,
@@ -2560,7 +2561,7 @@ else:
                 )
 
                 if not render_patterns:
-                    st.caption("Toggle **Render pattern charts** to show graphs.")
+                    st.markdown('<span style="color:#000000;">Toggle **Render pattern charts** to show graphs.</span>', unsafe_allow_html=True)
                 else:
                     if pattern_choice == "All (10)":
                         cols = st.columns(2)
@@ -2580,15 +2581,15 @@ else:
                             st.plotly_chart(fig_pattern, use_container_width=True, key=f"pattern_single_{pattern_type}")
                         except Exception as e:
                             st.caption(f"{pattern_choice}: N/A ({e})")
-
+                st.markdown('</div>', unsafe_allow_html=True)
 
 
     # ─── RISK METRICS TABLE ─────────────────────────────────────────────────
     st.markdown("""
     <div class="section-header">
-        <div class="section-tag">MODULE 07</div>
-        <div class="section-title">Risk & Tail Analytics</div>
-        <div class="section-subtitle">Professional-grade metric suite with statistical decomposition</div>
+        <div class="section-tag" style="color:#000000;">MODULE 07</div>
+        <div class="section-title" style="color:#000000;">Risk & Tail Analytics</div>
+        <div class="section-subtitle" style="color:#000000;">Professional-grade metric suite with statistical decomposition</div>
     </div>
     """, unsafe_allow_html=True)
 
