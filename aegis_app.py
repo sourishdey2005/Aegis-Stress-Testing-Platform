@@ -220,7 +220,7 @@ html, body, [class*="css"] {
 }
 .kpi-sub {
     font-size: 12px;
-    color: var(--text-muted);
+    color: #000000;
     margin-top: 6px;
 }
 .kpi-badge {
@@ -307,10 +307,11 @@ html, body, [class*="css"] {
     border-collapse: separate;
     border-spacing: 0;
     font-size: 13px;
+    color: #000000;
 }
 .styled-table th {
     background: var(--bg-panel);
-    color: var(--text-muted);
+    color: #000000;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.8px;
@@ -323,6 +324,7 @@ html, body, [class*="css"] {
     padding: 10px 14px;
     border-bottom: 1px solid var(--border-color);
     font-family: 'DM Mono', monospace;
+    color: #000000;
 }
 .styled-table tr:last-child td { border-bottom: none; }
 
@@ -447,38 +449,60 @@ div[data-testid="stMetricValue"] {
 
 # ─── HELPERS & ENGINES ───────────────────────────────────────────────────────
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=600, show_spinner=False)
 def fetch_data(tickers: list, period: str = "2y") -> pd.DataFrame:
-    """Fetch historical OHLCV data from Yahoo Finance."""
+    """Fetch historical OHLCV data from Yahoo Finance - optimized for low memory."""
+    if not tickers:
+        return pd.DataFrame()
     frames = {}
-    for tkr in tickers:
+    tickers_to_fetch = [t for t in tickers[:8] if t]
+    for tkr in tickers_to_fetch:
         try:
             df = yf.download(tkr, period=period, auto_adjust=True, progress=False)
-            if not df.empty:
-                frames[tkr] = df["Close"].squeeze()
+            if df is not None and len(df) > 0 and "Close" in df.columns:
+                close = df["Close"].squeeze()
+                if hasattr(close, 'astype'):
+                    close = close.astype(np.float32)
+                frames[tkr] = close
         except Exception:
             pass
     if not frames:
         return pd.DataFrame()
     prices = pd.DataFrame(frames).dropna(how="all")
+    if prices.empty:
+        return pd.DataFrame()
     prices.ffill(inplace=True)
     prices.bfill(inplace=True)
     return prices
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_ohlc_data(ticker: str, period: str = "2y") -> pd.DataFrame:
+    """Fetch OHLCV data - cached separately to avoid re-fetching."""
+    try:
+        df = yf.download(ticker, period=period, auto_adjust=True, progress=False)
+        if df is not None and not df.empty:
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+            return df.astype(np.float32)
+    except Exception:
+        pass
+    return pd.DataFrame()
+
 
 @st.cache_data(ttl=60, show_spinner=False)
 def fetch_live_quote(ticker: str) -> dict:
-    """Fetch live quote data."""
+    """Fetch live quote data - lightweight version."""
     try:
         t = yf.Ticker(ticker)
-        info = t.fast_info
         hist = t.history(period="2d")
-        price = float(hist["Close"].iloc[-1]) if not hist.empty else 0.0
-        prev  = float(hist["Close"].iloc[-2]) if len(hist) > 1 else price
-        chg   = (price - prev) / prev * 100 if prev else 0.0
-        return {"price": price, "change_pct": chg, "ticker": ticker}
+        if hist is not None and len(hist) > 0:
+            price = float(hist["Close"].iloc[-1]) if "Close" in hist.columns else 0.0
+            prev = float(hist["Close"].iloc[-2]) if len(hist) > 1 else price
+            chg = (price - prev) / prev * 100 if prev else 0.0
+            return {"price": price, "change_pct": chg, "ticker": ticker}
     except Exception:
-        return {"price": 0.0, "change_pct": 0.0, "ticker": ticker}
+        pass
+    return {"price": 0.0, "change_pct": 0.0, "ticker": ticker}
 
 
 def compute_returns(prices: pd.DataFrame, log: bool = True) -> pd.DataFrame:
@@ -671,6 +695,402 @@ def apply_theme(fig):
     return fig
 
 
+def create_candle_variant(df, variant_type, ticker, COLORS):
+    df = df.copy()
+    for col in ("Open", "High", "Low", "Close"):
+        if col not in df.columns:
+            fig = go.Figure()
+            fig.add_annotation(text=f"Missing column: {col}", showarrow=False, x=0.5, y=0.5, xref="paper", yref="paper")
+            fig.update_layout(title=f"{variant_type} — {ticker}", height=280, template="plotly_white")
+            return fig
+
+    if "Volume" not in df.columns:
+        df["Volume"] = 0
+
+    df = df.dropna(subset=["Open", "High", "Low", "Close"])
+    if df.empty:
+        fig = go.Figure()
+        fig.add_annotation(text="No OHLC data", showarrow=False, x=0.5, y=0.5, xref="paper", yref="paper")
+        fig.update_layout(title=f"{variant_type} — {ticker}", height=280, template="plotly_white")
+        return fig
+
+    fig = go.Figure()
+
+    if variant_type == "standard":
+        fig.add_trace(go.Candlestick(
+            x=df.index, open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"],
+            name=ticker, increasing_line_color=COLORS["green"], decreasing_line_color=COLORS["red"]
+        ))
+        fig.update_layout(title=f"Standard Candlestick — {ticker}", height=280)
+
+    elif variant_type == "ohlc_bars":
+        fig.add_trace(go.Ohlc(
+            x=df.index, open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"],
+            name=ticker, increasing_line_color=COLORS["green"], decreasing_line_color=COLORS["red"]
+        ))
+        fig.update_layout(title=f"OHLC Bars — {ticker}", height=280)
+
+    elif variant_type == "line":
+        fig.add_trace(go.Scatter(
+            x=df.index, y=df["Close"], mode="lines", name=ticker,
+            line=dict(color=COLORS["navy"], width=1.8)
+        ))
+        fig.update_layout(title=f"Line Chart — {ticker}", height=280)
+
+    elif variant_type == "area":
+        fig.add_trace(go.Scatter(
+            x=df.index, y=df["Close"], mode="lines", name=ticker,
+            fill="tozeroy", fillcolor="rgba(26,86,219,0.18)",
+            line=dict(color=COLORS["blue"], width=1.8)
+        ))
+        fig.update_layout(title=f"Area Chart — {ticker}", height=280)
+
+    elif variant_type == "heikin_ashi":
+        ha_close = (df["Open"] + df["High"] + df["Low"] + df["Close"]) / 4
+        ha_open = pd.Series(index=df.index, dtype="float64")
+        ha_open.iloc[0] = (df["Open"].iloc[0] + df["Close"].iloc[0]) / 2
+        for i in range(1, len(df)):
+            ha_open.iloc[i] = (ha_open.iloc[i - 1] + ha_close.iloc[i - 1]) / 2
+        ha_high = pd.concat([df["High"], ha_open, ha_close], axis=1).max(axis=1)
+        ha_low = pd.concat([df["Low"], ha_open, ha_close], axis=1).min(axis=1)
+        fig.add_trace(go.Candlestick(x=df.index, open=ha_open, high=ha_high, low=ha_low, close=ha_close, name="Heikin-Ashi"))
+        fig.update_layout(title=f"Heikin-Ashi — {ticker}", height=280)
+
+    elif variant_type == "renko":
+        diffs = df["Close"].diff().abs().dropna()
+        brick_size = float(np.nanmedian(diffs.rolling(14).mean())) if len(diffs) >= 20 else float(diffs.mean())
+        if not np.isfinite(brick_size) or brick_size <= 0:
+            brick_size = float(df["Close"].std() * 0.2) if np.isfinite(df["Close"].std()) and df["Close"].std() > 0 else float(df["Close"].iloc[0] * 0.01)
+        brick_size = max(brick_size, 1e-9)
+
+        bricks_x = []
+        bricks_y = []
+        last = float(df["Close"].iloc[0])
+        for ts, price in zip(df.index, df["Close"].astype(float).values):
+            while price - last >= brick_size:
+                last += brick_size
+                bricks_x.append(ts)
+                bricks_y.append(last)
+            while price - last <= -brick_size:
+                last -= brick_size
+                bricks_x.append(ts)
+                bricks_y.append(last)
+
+        if not bricks_x:
+            bricks_x = list(df.index)
+            bricks_y = list(df["Close"].astype(float).values)
+
+        fig.add_trace(go.Scatter(x=bricks_x, y=bricks_y, mode="lines", name="Renko Close", line=dict(color=COLORS["blue"], width=2)))
+        fig.update_layout(title=f"Renko (approx) — {ticker}", height=280)
+
+    elif variant_type == "pnf":
+        diffs = df["Close"].diff().fillna(0.0)
+        sign = np.sign(diffs)
+        y = diffs.abs()
+        fig.add_trace(go.Bar(x=df.index, y=y, marker_color=[COLORS["green"] if s >= 0 else COLORS["red"] for s in sign], name="Box Moves"))
+        fig.update_layout(title=f"Point & Figure (approx) — {ticker}", height=280)
+
+    elif variant_type == "kagi":
+        diffs = df["Close"].diff().abs()
+        reversal = float(np.nanmedian(diffs.rolling(20).mean()))
+        if not np.isfinite(reversal) or reversal <= 0:
+            reversal = float(df["Close"].std() * 0.25) if np.isfinite(df["Close"].std()) and df["Close"].std() > 0 else float(df["Close"].iloc[0] * 0.01)
+        reversal = max(reversal, 1e-9)
+
+        kagi_x = [df.index[0]]
+        kagi_y = [float(df["Close"].iloc[0])]
+        direction = 0
+        last_extreme = float(df["Close"].iloc[0])
+        for ts, price in zip(df.index[1:], df["Close"].astype(float).values[1:]):
+            if direction >= 0:
+                last_extreme = max(last_extreme, price)
+                if (last_extreme - price) >= reversal:
+                    direction = -1
+                    kagi_x.append(ts)
+                    kagi_y.append(price)
+                    last_extreme = price
+            if direction <= 0:
+                last_extreme = min(last_extreme, price)
+                if (price - last_extreme) >= reversal:
+                    direction = 1
+                    kagi_x.append(ts)
+                    kagi_y.append(price)
+                    last_extreme = price
+
+        fig.add_trace(go.Scatter(x=kagi_x, y=kagi_y, mode="lines+markers", name="Kagi", line=dict(color=COLORS["purple"], width=2)))
+        fig.update_layout(title=f"Kagi (approx) — {ticker}", height=280)
+
+    elif variant_type == "range_bars":
+        fig.add_trace(go.Bar(x=df.index, y=(df["High"] - df["Low"]), marker_color=COLORS["teal"], name="Range"))
+        fig.update_layout(title=f"Range Bars — {ticker}", height=280)
+
+    elif variant_type == "candle_volume":
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=True, row_heights=[0.72, 0.28], vertical_spacing=0.02)
+        fig.add_trace(go.Candlestick(x=df.index, open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"], name=ticker), row=1, col=1)
+        vol_colors = np.where(df["Close"] >= df["Open"], COLORS["green"], COLORS["red"])
+        fig.add_trace(go.Bar(x=df.index, y=df["Volume"], name="Volume", marker_color=vol_colors, opacity=0.55), row=2, col=1)
+        fig.update_layout(title=f"Candlestick + Volume — {ticker}", height=360)
+        fig.update_xaxes(rangeslider_visible=False, row=1, col=1)
+
+    elif variant_type == "candle_ma":
+        sma20 = df["Close"].rolling(20).mean()
+        sma50 = df["Close"].rolling(50).mean()
+        fig.add_trace(go.Candlestick(x=df.index, open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"], name=ticker))
+        fig.add_trace(go.Scatter(x=sma20.index, y=sma20, name="SMA 20", line=dict(color=COLORS["blue"], width=1.5)))
+        fig.add_trace(go.Scatter(x=sma50.index, y=sma50, name="SMA 50", line=dict(color=COLORS["red"], width=1.5)))
+        fig.update_layout(title=f"Candlestick + Moving Averages — {ticker}", height=280)
+
+    elif variant_type == "candle_bb":
+        basis = df["Close"].rolling(20).mean()
+        dev = df["Close"].rolling(20).std()
+        upper = basis + 2 * dev
+        lower = basis - 2 * dev
+        fig.add_trace(go.Candlestick(x=df.index, open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"], name=ticker))
+        fig.add_trace(go.Scatter(x=upper.index, y=upper, name="Upper BB", line=dict(color=COLORS["red"], dash="dash", width=1.2)))
+        fig.add_trace(go.Scatter(x=lower.index, y=lower, name="Lower BB", line=dict(color=COLORS["green"], dash="dash", width=1.2)))
+        fig.update_layout(title=f"Candlestick + Bollinger Bands — {ticker}", height=280)
+
+    elif variant_type == "hollow":
+        fig.add_trace(go.Candlestick(
+            x=df.index, open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"], name=ticker,
+            increasing_line_color=COLORS["green"], decreasing_line_color=COLORS["red"],
+            increasing_fillcolor="rgba(0,0,0,0)", decreasing_fillcolor=COLORS["red"]
+        ))
+        fig.update_layout(title=f"Hollow Candles — {ticker}", height=280)
+
+    elif variant_type == "colored_ohlc":
+        fig.add_trace(go.Ohlc(
+            x=df.index, open=df["Open"], high=df["High"], low=df["Low"], close=df["Close"],
+            name=ticker, increasing_line_color=COLORS["green"], decreasing_line_color=COLORS["red"]
+        ))
+        fig.update_layout(title=f"Colored OHLC — {ticker}", height=280)
+
+    elif variant_type == "trend_cols":
+        delta = df["Close"].diff().fillna(0.0)
+        colors = np.where(delta >= 0, COLORS["green"], COLORS["red"])
+        fig.add_trace(go.Bar(x=df.index, y=delta, marker_color=colors, name="Δ Close"))
+        fig.update_layout(title=f"Trend Columns — {ticker}", height=280)
+
+    elif variant_type == "price_channels":
+        window = 20
+        high_ch = df["High"].rolling(window).max()
+        low_ch = df["Low"].rolling(window).min()
+        mid_ch = (high_ch + low_ch) / 2
+        fig.add_trace(go.Scatter(x=df.index, y=df["Close"], name="Close", line=dict(color=COLORS["navy"], width=1.4)))
+        fig.add_trace(go.Scatter(x=high_ch.index, y=high_ch, name="Channel High", line=dict(color=COLORS["red"], width=1), mode="lines"))
+        fig.add_trace(go.Scatter(x=low_ch.index, y=low_ch, name="Channel Low", line=dict(color=COLORS["green"], width=1), mode="lines"))
+        fig.add_trace(go.Scatter(x=mid_ch.index, y=mid_ch, name="Mid", line=dict(color=COLORS["blue"], width=1.6), mode="lines"))
+        fig.update_layout(title=f"Price Channels — {ticker}", height=280)
+
+    elif variant_type == "ichimoku":
+        high9 = df["High"].rolling(9).max()
+        low9 = df["Low"].rolling(9).min()
+        tenkan = (high9 + low9) / 2
+
+        high26 = df["High"].rolling(26).max()
+        low26 = df["Low"].rolling(26).min()
+        kijun = (high26 + low26) / 2
+
+        span_a = ((tenkan + kijun) / 2).shift(26)
+        high52 = df["High"].rolling(52).max()
+        low52 = df["Low"].rolling(52).min()
+        span_b = ((high52 + low52) / 2).shift(26)
+
+        fig.add_trace(go.Scatter(x=df.index, y=df["Close"], name="Close", line=dict(color=COLORS["navy"], width=1.2)))
+        fig.add_trace(go.Scatter(x=tenkan.index, y=tenkan, name="Tenkan", line=dict(color=COLORS["blue"], width=1.2)))
+        fig.add_trace(go.Scatter(x=kijun.index, y=kijun, name="Kijun", line=dict(color=COLORS["red"], width=1.2)))
+        fig.add_trace(go.Scatter(x=span_a.index, y=span_a, name="Span A", line=dict(color=COLORS["green"], width=1), fill=None))
+        fig.add_trace(go.Scatter(x=span_b.index, y=span_b, name="Span B", line=dict(color=COLORS["amber"], width=1), fill="tonexty", fillcolor="rgba(14,165,233,0.10)"))
+        fig.update_layout(title=f"Ichimoku Cloud — {ticker}", height=280)
+
+    elif variant_type == "zigzag":
+        close = df["Close"].astype(float)
+        thresh_series = close.pct_change().abs().rolling(20).median()
+        thresh = float(thresh_series.dropna().iloc[-1]) if not thresh_series.dropna().empty else 0.02
+        if not np.isfinite(thresh) or thresh <= 0:
+            thresh = 0.02
+        thresh = max(thresh, 0.005)
+
+        pivots_x = [df.index[0]]
+        pivots_y = [float(close.iloc[0])]
+        last_pivot = float(close.iloc[0])
+        trend = 0
+        for ts, price in zip(df.index[1:], close.values[1:]):
+            change = (price - last_pivot) / last_pivot if last_pivot != 0 else 0
+            if trend >= 0 and change <= -thresh:
+                trend = -1
+                last_pivot = price
+                pivots_x.append(ts)
+                pivots_y.append(price)
+            elif trend <= 0 and change >= thresh:
+                trend = 1
+                last_pivot = price
+                pivots_x.append(ts)
+                pivots_y.append(price)
+
+        fig.add_trace(go.Scatter(x=df.index, y=close, mode="lines", name="Close", line=dict(color="rgba(15,52,96,0.35)", width=1)))
+        fig.add_trace(go.Scatter(x=pivots_x, y=pivots_y, mode="lines+markers", name="ZigZag", line=dict(color=COLORS["navy"], width=2)))
+        fig.update_layout(title=f"Zigzag — {ticker}", height=280)
+
+    elif variant_type == "mtf":
+        ohlc = df[["Open", "High", "Low", "Close"]].copy()
+        weekly = ohlc.resample("W-FRI").agg({"Open": "first", "High": "max", "Low": "min", "Close": "last"}).dropna()
+        fig = make_subplots(rows=2, cols=1, shared_xaxes=False, row_heights=[0.55, 0.45], vertical_spacing=0.10, subplot_titles=("Daily", "Weekly"))
+        fig.add_trace(go.Candlestick(x=ohlc.index, open=ohlc["Open"], high=ohlc["High"], low=ohlc["Low"], close=ohlc["Close"], name="Daily"), row=1, col=1)
+        fig.add_trace(go.Candlestick(x=weekly.index, open=weekly["Open"], high=weekly["High"], low=weekly["Low"], close=weekly["Close"], name="Weekly"), row=2, col=1)
+        fig.update_layout(title=f"Multi-Timeframe — {ticker}", height=520)
+        fig.update_xaxes(rangeslider_visible=False, row=1, col=1)
+        fig.update_xaxes(rangeslider_visible=False, row=2, col=1)
+
+    elif variant_type == "comparison":
+        base = df["Close"].iloc[0]
+        norm_close = (df["Close"] / base) * 100 if base != 0 else df["Close"]
+        norm_sma20 = (df["Close"].rolling(20).mean() / base) * 100 if base != 0 else df["Close"].rolling(20).mean()
+        fig.add_trace(go.Scatter(x=df.index, y=norm_close, mode="lines", name="Price (Base=100)", line=dict(color=COLORS["navy"], width=2)))
+        fig.add_trace(go.Scatter(x=df.index, y=norm_sma20, mode="lines", name="SMA20 (Base=100)", line=dict(color=COLORS["teal"], width=1.6, dash="dot")))
+        try:
+            fig.add_hline(y=100, line_dash="dash", line_color=COLORS["gray"])
+        except Exception:
+            pass
+        fig.update_layout(title=f"Comparison Overlay — {ticker} (Base=100)", height=280)
+
+    else:
+        fig.add_trace(go.Scatter(
+            x=df.index, y=df["Close"], mode="lines", name=ticker,
+            line=dict(color=COLORS["navy"], width=1.8)
+        ))
+        fig.update_layout(title=f"{variant_type} — {ticker}", height=280)
+
+    fig.update_layout(
+        template="plotly_white",
+        font=dict(family="DM Sans", size=10),
+        margin=dict(l=10, r=10, t=36, b=10),
+        xaxis=dict(showgrid=False, rangeslider=dict(visible=False)),
+        yaxis=dict(showgrid=True, gridcolor="rgba(0,0,0,0.05)"),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0)
+    )
+    return fig
+
+
+def create_candlestick_pattern(df, pattern_type, ticker, COLORS):
+    fig = go.Figure()
+
+    required = ("Open", "High", "Low", "Close")
+    for col in required:
+        if col not in df.columns:
+            fig.add_annotation(text=f"Missing column: {col}", showarrow=False, x=0.5, y=0.5, xref="paper", yref="paper")
+            fig.update_layout(title=f"{pattern_type} — {ticker}", height=380, template="plotly_white")
+            return fig
+
+    recent = df.dropna(subset=list(required)).iloc[-90:].copy()
+    if recent.empty or len(recent) < 3:
+        fig.add_annotation(text="Not enough OHLC data", showarrow=False, x=0.5, y=0.5, xref="paper", yref="paper")
+        fig.update_layout(title=f"{pattern_type} — {ticker}", height=380, template="plotly_white")
+        return fig
+
+    fig.add_trace(go.Candlestick(
+        x=recent.index, open=recent["Open"], high=recent["High"], low=recent["Low"], close=recent["Close"],
+        name=ticker, increasing_line_color=COLORS["green"], decreasing_line_color=COLORS["red"], opacity=0.85
+    ))
+
+    body = (recent["Close"] - recent["Open"]).abs()
+    rng = (recent["High"] - recent["Low"]).replace(0, np.nan)
+
+    found_indices = []
+    found_labels = []
+    found_prices = []
+
+    for i in range(2, len(recent)):
+        o = float(recent["Open"].iloc[i])
+        h = float(recent["High"].iloc[i])
+        l = float(recent["Low"].iloc[i])
+        c = float(recent["Close"].iloc[i])
+
+        po = float(recent["Open"].iloc[i - 1])
+        ph = float(recent["High"].iloc[i - 1])
+        pl = float(recent["Low"].iloc[i - 1])
+        pc = float(recent["Close"].iloc[i - 1])
+
+        ppo = float(recent["Open"].iloc[i - 2])
+        ppc = float(recent["Close"].iloc[i - 2])
+
+        detected = False
+        label = ""
+
+        b = float(body.iloc[i])
+        r = float(rng.iloc[i]) if np.isfinite(rng.iloc[i]) else float(h - l)
+        r = r if np.isfinite(r) and r > 0 else 1e-9
+
+        if pattern_type == "hammer_pattern":
+            if (min(o, c) - l) > 2 * b and (h - max(o, c)) < 0.1 * r:
+                detected, label = True, "Hammer"
+            elif (h - max(o, c)) > 2 * b and (min(o, c) - l) < 0.1 * r:
+                detected, label = True, "Inverted Hammer"
+
+        elif pattern_type == "doji_pattern":
+            if b < 0.1 * r:
+                detected, label = True, "Doji"
+            elif b < 0.3 * r and (h - max(o, c)) > b and (min(o, c) - l) > b:
+                detected, label = True, "Spinning Top"
+
+        elif pattern_type == "engulfing_bullish":
+            if pc < po and c > o and o <= pc and c >= po:
+                detected, label = True, "Bullish Engulfing"
+
+        elif pattern_type == "engulfing_bearish":
+            if pc > po and c < o and o >= pc and c <= po:
+                detected, label = True, "Bearish Engulfing"
+
+        elif pattern_type == "morning_star":
+            if ppc < ppo and body.iloc[i - 1] < 0.3 * body.iloc[i - 2] and c > o and c > (ppo + ppc) / 2:
+                detected, label = True, "Morning Star"
+
+        elif pattern_type == "evening_star":
+            if ppc > ppo and body.iloc[i - 1] < 0.3 * body.iloc[i - 2] and c < o and c < (ppo + ppc) / 2:
+                detected, label = True, "Evening Star"
+
+        elif pattern_type == "three_white":
+            if c > o and pc > po and ppc > ppo and c > pc and pc > ppc:
+                detected, label = True, "Three White Soldiers"
+
+        elif pattern_type == "three_black":
+            if c < o and pc < po and ppc < ppo and c < pc and pc < ppc:
+                detected, label = True, "Three Black Crows"
+
+        elif pattern_type == "piercing":
+            if pc < po and c > o and o < pl and c > (po + pc) / 2:
+                detected, label = True, "Piercing Pattern"
+
+        elif pattern_type == "dark_cloud":
+            if pc > po and c < o and o > ph and c < (po + pc) / 2:
+                detected, label = True, "Dark Cloud Cover"
+
+        if detected:
+            found_indices.append(recent.index[i])
+            found_labels.append(label)
+            bullishish = any(k in label for k in ("Bullish", "Hammer", "Morning", "Piercing", "White"))
+            found_prices.append(l * 0.995 if bullishish else h * 1.005)
+
+    if found_indices:
+        fig.add_trace(go.Scatter(
+            x=found_indices, y=found_prices, mode="markers+text",
+            text=found_labels, textposition="bottom center",
+            marker=dict(symbol="diamond", size=11, color=COLORS["blue"], line=dict(width=1, color="white")),
+            name="Detected Patterns"
+        ))
+
+    fig.update_layout(
+        title=f"{pattern_type.replace('_', ' ').title()} — {ticker}",
+        height=380,
+        xaxis_rangeslider_visible=False,
+        template="plotly_white",
+        font=dict(family="DM Sans, sans-serif", size=11),
+        margin=dict(l=10, r=10, t=46, b=10),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
+    return fig
+
+
 # ─── SIDEBAR ────────────────────────────────────────────────────────────────
 
 with st.sidebar:
@@ -704,24 +1124,24 @@ with st.sidebar:
     col_ticker_dropdown, col_ticker_text = st.columns([2, 1])
     with col_ticker_dropdown:
         selected_from_dropdown = st.multiselect(
-            "Select Tickers (or type below)",
+            "Select Tickers (max 6 for performance)",
             options=TRENDING_TICKERS,
             default=default_map[asset_class] if asset_class in default_map else [],
             key="ticker_multiselect"
         )
     with col_ticker_text:
-        tickers_input = st.text_input("Custom tickers", value="", placeholder="AAPL, MSFT, ...")
+        tickers_input = st.text_input("Custom tickers", value="", placeholder="AAPL, ...")
     
     dropdown_tickers = [t.strip().upper() for t in selected_from_dropdown if t.strip()]
     custom_tickers = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
-    tickers = list(dict.fromkeys(dropdown_tickers + custom_tickers))
+    tickers = list(dict.fromkeys(dropdown_tickers + custom_tickers))[:6]
 
     data_period = st.selectbox("Historical Period", ["6mo", "1y", "2y", "5y"], index=2)
 
     st.markdown("---")
     st.markdown('<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.5;margin-bottom:6px;">MONTE CARLO</div>', unsafe_allow_html=True)
 
-    n_simulations = st.select_slider("Simulations", options=[500, 1000, 5000, 10000, 25000, 50000], value=5000)
+    n_simulations = st.select_slider("Simulations", options=[500, 1000, 2500, 5000, 10000], value=2500)
     horizon_days  = st.slider("Forecast Horizon (days)", 30, 252, 90)
     confidence    = st.slider("Confidence Level", 0.90, 0.99, 0.95, 0.01)
 
@@ -1048,41 +1468,72 @@ with price_tab5:
         if 'Close' in candle_df.columns:
             candle_df = candle_df[['Open', 'High', 'Low', 'Close', 'Volume']]
             
-            st.markdown("### 🕯️ 20 Candlestick Chart Variants")
+            st.markdown("### 🕯️ Candlestick Chart Variants")
             
-            variant_charts = [
-                ("1️⃣ Standard Candlestick", "standard"),
-                ("2️⃣ OHLC Bars", "ohlc_bars"),
-                ("3️⃣ Line Chart", "line"),
-                ("4️⃣ Area Chart", "area"),
-                ("5️⃣ Heikin-Ashi", "heikin_ashi"),
-                ("6️⃣ Renko Chart", "renko"),
-                ("7️⃣ Point & Figure", "pnf"),
-                ("8️⃣ Kagi Chart", "kagi"),
-                ("9️⃣ Range Bars", "range_bars"),
-                ("🔟 Candle with Volume", "candle_volume"),
-                ("1️⃣1️⃣ Candle with MA", "candle_ma"),
-                ("1️⃣2️⃣ Candle with BB", "candle_bb"),
-                ("1️⃣3️⃣ Hollow Candles", "hollow"),
-                ("1️⃣4️⃣ Colored OHLC", "colored_ohlc"),
-                ("1️⃣5️⃣ Trend Columns", "trend_cols"),
-                ("1️⃣6️⃣ Price Channels", "price_channels"),
-                ("1️⃣7️⃣ Ichimoku Cloud", "ichimoku"),
-                ("1️⃣8️⃣ Zigzag Lines", "zigzag"),
-                ("1️⃣9️⃣ Multi-Timeframe", "mtf"),
-                ("2️⃣0️⃣ Comparison Overlay", "comparison")
-            ]
-            
-            var_cols = st.columns(2)
-            for idx, (var_name, var_type) in enumerate(variant_charts):
-                with var_cols[idx % 2]:
-                    try:
-                        fig_var = create_candle_variant(candle_df, var_type, candle_ticker, COLORS)
-                        st.plotly_chart(fig_var, use_container_width=True, key=f"candle_{idx}")
-                    except Exception as e:
-                        st.caption(f"{var_name}: N/A")
+            variant_expander = st.expander("Show All 20 Chart Variants", expanded=True)
+            with variant_expander:
+                variant_charts = [
+                    ("Standard Candlestick", "standard"),
+                    ("OHLC Bars", "ohlc_bars"),
+                    ("Line Chart", "line"),
+                    ("Area Chart", "area"),
+                    ("Heikin-Ashi", "heikin_ashi"),
+                    ("Renko Chart", "renko"),
+                    ("Point & Figure", "pnf"),
+                    ("Kagi Chart", "kagi"),
+                    ("Range Bars", "range_bars"),
+                    ("Candle with Volume", "candle_volume"),
+                    ("Candle with MA", "candle_ma"),
+                    ("Candle with BB", "candle_bb"),
+                    ("Hollow Candles", "hollow"),
+                    ("Colored OHLC", "colored_ohlc"),
+                    ("Trend Columns", "trend_cols"),
+                    ("Price Channels", "price_channels"),
+                    ("Ichimoku Cloud", "ichimoku"),
+                    ("Zigzag Lines", "zigzag"),
+                    ("Multi-Timeframe", "mtf"),
+                    ("Comparison Overlay", "comparison")
+                ]
 
-def create_candle_variant(df, variant_type, ticker, COLORS):
+                render_variants = st.toggle(
+                    "Render variant charts",
+                    value=False,
+                    key="toggle_candle_variants_render",
+                    help="Turn on to render charts. Use the selector to render one-by-one (or all).",
+                )
+
+                variant_options = ["All (20)"] + [name for name, _ in variant_charts]
+                variant_choice = st.selectbox(
+                    "Select variant to render",
+                    variant_options,
+                    index=0,
+                    key="select_candle_variant_choice",
+                    disabled=not render_variants,
+                )
+
+                if not render_variants:
+                    st.caption("Toggle **Render variant charts** to show graphs.")
+                else:
+                    if variant_choice == "All (20)":
+                        var_cols = st.columns(2)
+                        for idx, (var_name, var_type) in enumerate(variant_charts):
+                            with var_cols[idx % 2]:
+                                try:
+                                    st.markdown(f"**{var_name}**")
+                                    fig_var = create_candle_variant(candle_df, var_type, candle_ticker, COLORS)
+                                    st.plotly_chart(fig_var, use_container_width=True, key=f"candle_{idx}")
+                                except Exception as e:
+                                    st.caption(f"{var_name}: N/A ({e})")
+                    else:
+                        var_type = next(vt for vn, vt in variant_charts if vn == variant_choice)
+                        st.markdown(f"**{variant_choice}**")
+                        try:
+                            fig_var = create_candle_variant(candle_df, var_type, candle_ticker, COLORS)
+                            st.plotly_chart(fig_var, use_container_width=True, key=f"candle_single_{var_type}")
+                        except Exception as e:
+                            st.caption(f"{variant_choice}: N/A ({e})")
+
+def _create_candle_variant_legacy(df, variant_type, ticker, COLORS):
     fig = go.Figure()
     
     if variant_type == "standard":
@@ -1315,57 +1766,59 @@ def create_candle_variant(df, variant_type, ticker, COLORS):
         if 'Close' in adv_df.columns:
             adv_df = adv_df[['Open', 'High', 'Low', 'Close', 'Volume']]
             
-            st.markdown("### 📊 30+ Advanced Chart Types")
+            st.markdown("### 📊 Advanced Chart Types")
             
             PALETTE = ["#1A56DB", "#DC2626", "#059669", "#7C3AED", "#D97706", "#0EA5E9"]
             vis_wts_arr = np.ones(len(valid_tickers)) / len(valid_tickers) * 100
             
             adv_charts = [
-                ("1️⃣ Line Chart", "line"),
-                ("2️⃣ Smooth Line", "smooth"),
-                ("3️⃣ Step Line", "step"),
-                ("4️⃣ Area Fill", "area"),
-                ("5️⃣ Stacked Area", "stacked_area"),
-                ("6️⃣ Bar Chart", "bar"),
-                ("7️⃣ Grouped Bar", "grouped_bar"),
-                ("8️⃣ Stacked Bar", "stacked_bar"),
-                ("9️⃣ Horizontal Bar", "h_bar"),
-                ("🔟 Waterfall", "waterfall"),
-                ("1️⃣1️⃣ Funnel", "funnel"),
-                ("1️⃣2️⃣ Pie Chart", "pie"),
-                ("1️⃣3️⃣ Donut Chart", "donut"),
-                ("1️⃣4️⃣ Treemap", "treemap"),
-                ("1️⃣5️⃣ Sunburst", "sunburst"),
-                ("1️⃣6️⃣ Parallel Categories", "par_cat"),
-                ("1️⃣7️⃣ Scatter Plot", "scatter"),
-                ("1️⃣8️⃣ Bubble Chart", "bubble"),
-                ("1️⃣9️⃣ Dot Plot", "dot"),
-                ("2️⃣0️⃣ Histogram", "histogram"),
-                ("2️⃣1️⃣ Box Plot", "box"),
-                ("2️⃣2️⃣ Violin Plot", "violin"),
-                ("2️⃣3️⃣ Strip Plot", "strip"),
-                ("2️⃣4️⃣ ECDF Plot", "ecdf"),
-                ("2️⃣5️⃣ QQ Plot", "qq"),
-                ("2️⃣6️⃣ Density Contour", "density"),
-                ("2️⃣7️⃣ Heatmap", "heatmap"),
-                ("2️⃣8️⃣ 3D Scatter", "scatter3d"),
-                ("2️⃣9️⃣ 3D Surface", "surface3d"),
-                ("3️⃣0️⃣ Polar Chart", "polar"),
-                ("3️⃣1️⃣ Radar Fill", "radar_fill"),
-                ("3️⃣2️⃣ Horizontal Line", "h_line"),
-                ("3️⃣3️⃣ Candle + Volume Profile", "vol_profile"),
-                ("3️⃣4️⃣ Return Decomposition", "decomp"),
-                ("3️⃣5️⃣ Rolling Regression", "roll_reg")
+                ("Line Chart", "line"),
+                ("Smooth Line", "smooth"),
+                ("Step Line", "step"),
+                ("Area Fill", "area"),
+                ("Stacked Area", "stacked_area"),
+                ("Bar Chart", "bar"),
+                ("Grouped Bar", "grouped_bar"),
+                ("Stacked Bar", "stacked_bar"),
+                ("Horizontal Bar", "h_bar"),
+                ("Waterfall", "waterfall"),
+                ("Funnel", "funnel"),
+                ("Pie Chart", "pie"),
+                ("Donut Chart", "donut"),
+                ("Treemap", "treemap"),
+                ("Sunburst", "sunburst"),
+                ("Parallel Categories", "par_cat"),
+                ("Scatter Plot", "scatter"),
+                ("Bubble Chart", "bubble"),
+                ("Dot Plot", "dot"),
+                ("Histogram", "histogram"),
+                ("Box Plot", "box"),
+                ("Violin Plot", "violin"),
+                ("Strip Plot", "strip"),
+                ("ECDF Plot", "ecdf"),
+                ("QQ Plot", "qq"),
+                ("Density Contour", "density"),
+                ("Heatmap", "heatmap"),
+                ("3D Scatter", "scatter3d"),
+                ("3D Surface", "surface3d"),
+                ("Polar Chart", "polar"),
+                ("Radar Fill", "radar_fill"),
+                ("Horizontal Line", "h_line"),
+                ("Candle + Volume Profile", "vol_profile"),
+                ("Return Decomposition", "decomp"),
+                ("Rolling Regression", "roll_reg"),
             ]
             
-            chart_cols = st.columns(2)
-            for idx, (chart_name, chart_type) in enumerate(adv_charts):
-                with chart_cols[idx % 2]:
-                    try:
-                        fig_adv = create_advanced_chart(adv_df, chart_type, adv_ticker, COLORS, valid_tickers, prices)
-                        st.plotly_chart(fig_adv, use_container_width=True, key=f"adv_{idx}")
-                    except Exception as e:
-                        st.caption(f"{chart_name}: N/A")
+            adv_expander = st.expander("Show All 35 Chart Types", expanded=False)
+            with adv_expander:
+                chart_cols = st.columns(2)
+                for idx, (chart_name, chart_type) in enumerate(adv_charts):
+                    with chart_cols[idx % 2]:
+                        try:
+                            fig_adv = create_advanced_chart(adv_df, chart_type, adv_ticker, COLORS, valid_tickers, prices)
+                            st.plotly_chart(fig_adv, use_container_width=True, key=f"adv_{idx}")
+                        except Exception as e:
+                            st.caption(f"{chart_name}: N/A")
 
 def create_advanced_chart(df, chart_type, ticker, COLORS, tickers_list=None, prices_df=None):
     fig = go.Figure()
@@ -1807,8 +2260,7 @@ else:
 
     with sim_tab1:
         fig_paths = go.Figure()
-        # Fan: sample 200 random paths lightly
-        sample_idx = np.random.choice(paths.shape[0], min(200, paths.shape[0]), replace=False)
+        sample_idx = np.random.choice(paths.shape[0], min(150, paths.shape[0]), replace=False)
         for idx in sample_idx:
             fig_paths.add_trace(go.Scatter(
                 x=list(range(horizon_days)), y=paths[idx],
@@ -1864,7 +2316,7 @@ else:
 
         fig_tail = go.Figure()
         fig_tail.add_trace(go.Histogram(
-            x=returns_final, nbinsx=120, name="Simulated Returns",
+            x=returns_final, nbinsx=40, name="Simulated Returns",
             marker_color=COLORS["blue"], opacity=0.6,
             histnorm="probability density"
         ))
@@ -1889,20 +2341,20 @@ else:
             height=420, **PLOT_TEMPLATE["layout"]
         )
         st.plotly_chart(fig_tail, use_container_width=True)
-
-        # QQ plot
-        fig_qq = go.Figure()
-        sorted_r = np.sort(returns_final)
-        theoretical_q = norm.ppf(np.linspace(0.01, 0.99, len(sorted_r)))
-        fig_qq.add_trace(go.Scatter(x=theoretical_q, y=sorted_r[:len(theoretical_q)],
-            mode="markers", marker=dict(size=3, color=COLORS["blue"], opacity=0.4),
-            name="Empirical vs Normal"))
-        fig_qq.add_trace(go.Scatter(x=[-4,4], y=[-4*sg_s+mu_s, 4*sg_s+mu_s],
-            mode="lines", line=dict(color=COLORS["red"], width=2), name="Normal Line"))
-        fig_qq.update_layout(title="QQ Plot — Tail Departure from Normality",
-            xaxis_title="Theoretical Quantiles", yaxis_title="Empirical Quantiles",
-            height=360, **PLOT_TEMPLATE["layout"])
-        st.plotly_chart(fig_qq, use_container_width=True)
+        
+        with st.expander("📊 QQ Plot - Tail Departure from Normality"):
+            fig_qq = go.Figure()
+            sorted_r = np.sort(returns_final)
+            theoretical_q = norm.ppf(np.linspace(0.01, 0.99, len(sorted_r)))
+            fig_qq.add_trace(go.Scatter(x=theoretical_q, y=sorted_r[:len(theoretical_q)],
+                mode="markers", marker=dict(size=3, color=COLORS["blue"], opacity=0.4),
+                name="Empirical vs Normal"))
+            fig_qq.add_trace(go.Scatter(x=[-4,4], y=[-4*sg_s+mu_s, 4*sg_s+mu_s],
+                mode="lines", line=dict(color=COLORS["red"], width=2), name="Normal Line"))
+            fig_qq.update_layout(title="QQ Plot — Tail Departure from Normality",
+                xaxis_title="Theoretical Quantiles", yaxis_title="Empirical Quantiles",
+                height=360, **PLOT_TEMPLATE["layout"])
+            st.plotly_chart(fig_qq, use_container_width=True)
 
     with sim_tab3:
         # Drawdown waterfall for worst path
@@ -1929,7 +2381,7 @@ else:
         peak_all = np.maximum.accumulate(paths, axis=1)
         dd_all   = ((paths - peak_all) / peak_all).min(axis=1) * 100
         fig_dd_hist = go.Figure()
-        fig_dd_hist.add_trace(go.Histogram(x=dd_all, nbinsx=80,
+        fig_dd_hist.add_trace(go.Histogram(x=dd_all, nbinsx=30,
             marker_color=COLORS["red"], opacity=0.7, name="Max Drawdown Dist."))
         fig_dd_hist.add_vline(x=dd_all.mean(), line_color=COLORS["navy"],
             annotation_text=f"Avg: {dd_all.mean():.1f}%")
@@ -1939,10 +2391,9 @@ else:
         st.plotly_chart(fig_dd_hist, use_container_width=True)
 
     with sim_tab4:
-        # 3D surface: Time × Percentile × Portfolio Value
-        n_time   = min(horizon_days, 60)
+        n_time   = min(horizon_days, 30)
         t_idx    = np.linspace(0, horizon_days-1, n_time, dtype=int)
-        pct_range = np.arange(1, 100, 2)
+        pct_range = np.arange(5, 95, 10)
         Z = np.array([[np.percentile(paths[:, t], p) for t in t_idx] for p in pct_range])
 
         fig_3d = go.Figure(go.Surface(
@@ -2004,36 +2455,6 @@ else:
         ))
         fig_donut.update_layout(title="Donut Chart — Portfolio Composition", height=350, **PLOT_TEMPLATE["layout"])
         st.plotly_chart(fig_donut, use_container_width=True, key="donut_chart")
-        
-        fig_donut = go.Figure()
-        fig_donut.add_trace(go.Pie(
-            labels=valid_tickers,
-            values=vis_wts_arr,
-            hole=0.65,
-            direction='clockwise',
-            sort=False,
-            marker=dict(colors=PALETTE[:len(valid_tickers)])
-        ))
-        fig_pie.update_layout(title="Current Asset Allocation", height=400, **PLOT_TEMPLATE["layout"])
-        st.plotly_chart(fig_pie, use_container_width=True)
-        
-        st.markdown("**Sector/Asset Breakdown:**")
-        sector_data = []
-        for t, w in zip(valid_tickers, vis_wts_arr):
-            sector_data.append({"Asset": t, "Weight": f"{w:.1f}%"})
-        st.dataframe(pd.DataFrame(sector_data), use_container_width=True)
-        
-        fig_donut = go.Figure()
-        fig_donut.add_trace(go.Pie(
-            labels=valid_tickers,
-            values=vis_wts_arr,
-            hole=0.65,
-            direction='clockwise',
-            sort=False,
-            marker=dict(colors=PALETTE[:len(valid_tickers)])
-        ))
-        fig_donut.update_layout(title="Donut Chart — Portfolio Composition", height=350, **PLOT_TEMPLATE["layout"])
-        st.plotly_chart(fig_donut, use_container_width=True)
 
     with sim_tab6:
         mu = port_returns.mean()
@@ -2085,10 +2506,87 @@ else:
                 """, unsafe_allow_html=True)
 
 
-    # ─── RISK METRICS TABLE ─────────────────────────────────────────────────
+    # ─── CANDLESTICK PATTERN ANALYSIS ────────────────────────────────────────────────
     st.markdown("""
     <div class="section-header">
         <div class="section-tag">MODULE 06</div>
+        <div class="section-title">Candlestick Pattern Analyzer</div>
+        <div class="section-subtitle">AI-Powered Candlestick Pattern Recognition & Signal Generation</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    candle_pattern_ticker = st.selectbox("Select Ticker for Pattern Analysis", valid_tickers, key="pattern_ticker_sel")
+    pattern_data = fetch_ohlc_data(candle_pattern_ticker, period=data_period)
+    
+    if pattern_data is not None and len(pattern_data) > 0:
+        pattern_df = pattern_data.copy()
+        if isinstance(pattern_df.columns, pd.MultiIndex):
+            pattern_df.columns = pattern_df.columns.get_level_values(0)
+        
+        if 'Close' in pattern_df.columns:
+            pattern_df = pattern_df[['Open', 'High', 'Low', 'Close', 'Volume']]
+            
+            st.markdown("### 🕯️ 10 Candlestick Patterns")
+            
+            pattern_charts = [
+                ("Hammer & Inverted Hammer", "hammer_pattern"),
+                ("Doji & Spinning Top", "doji_pattern"),
+                ("Engulfing Bullish", "engulfing_bullish"),
+                ("Engulfing Bearish", "engulfing_bearish"),
+                ("Morning Star", "morning_star"),
+                ("Evening Star", "evening_star"),
+                ("Three White Soldiers", "three_white"),
+                ("Three Black Crows", "three_black"),
+                ("Piercing Pattern", "piercing"),
+                ("Dark Cloud Cover", "dark_cloud"),
+            ]
+            
+            pattern_expander = st.expander("📊 Show All 10 Candlestick Patterns", expanded=False)
+            with pattern_expander:
+                render_patterns = st.toggle(
+                    "Render pattern charts",
+                    value=False,
+                    key="toggle_candle_patterns_render",
+                    help="Turn on to render charts. Use the selector to render one-by-one (or all).",
+                )
+
+                pattern_options = ["All (10)"] + [name for name, _ in pattern_charts]
+                pattern_choice = st.selectbox(
+                    "Select pattern to render",
+                    pattern_options,
+                    index=0,
+                    key="select_candle_pattern_choice",
+                    disabled=not render_patterns,
+                )
+
+                if not render_patterns:
+                    st.caption("Toggle **Render pattern charts** to show graphs.")
+                else:
+                    if pattern_choice == "All (10)":
+                        cols = st.columns(2)
+                        for idx, (pattern_name, pattern_type) in enumerate(pattern_charts):
+                            with cols[idx % 2]:
+                                try:
+                                    st.markdown(f"**{pattern_name}**")
+                                    fig_pattern = create_candlestick_pattern(pattern_df, pattern_type, candle_pattern_ticker, COLORS)
+                                    st.plotly_chart(fig_pattern, use_container_width=True, key=f"pattern_{idx}")
+                                except Exception as e:
+                                    st.caption(f"{pattern_name}: N/A ({e})")
+                    else:
+                        pattern_type = next(pt for pn, pt in pattern_charts if pn == pattern_choice)
+                        st.markdown(f"**{pattern_choice}**")
+                        try:
+                            fig_pattern = create_candlestick_pattern(pattern_df, pattern_type, candle_pattern_ticker, COLORS)
+                            st.plotly_chart(fig_pattern, use_container_width=True, key=f"pattern_single_{pattern_type}")
+                        except Exception as e:
+                            st.caption(f"{pattern_choice}: N/A ({e})")
+
+
+
+    # ─── RISK METRICS TABLE ─────────────────────────────────────────────────
+    st.markdown("""
+    <div class="section-header">
+        <div class="section-tag">MODULE 07</div>
         <div class="section-title">Risk & Tail Analytics</div>
         <div class="section-subtitle">Professional-grade metric suite with statistical decomposition</div>
     </div>
@@ -2152,7 +2650,7 @@ else:
             ("P95 Portfolio",    f"${metrics['p95']:.2f}", "95th percentile outcome"),
         ]
         for label, val, interp in stat_rows:
-            stat_table_html += f"<tr><td>{label}</td><td><strong>{val}</strong></td><td style='color:#718096;font-size:11px;'>{interp}</td></tr>"
+            stat_table_html += f"<tr><td>{label}</td><td><strong>{val}</strong></td><td style='color:#000000;font-size:11px;'>{interp}</td></tr>"
         stat_table_html += "</tbody></table>"
         st.markdown(stat_table_html, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -2177,10 +2675,115 @@ else:
         st.dataframe(pd.DataFrame(asset_metrics), use_container_width=True, hide_index=True)
 
 
+def _create_candlestick_pattern_legacy(df, pattern_type, ticker, COLORS):
+    """Legacy implementation (unused)."""
+    fig = go.Figure()
+    
+    # Analyze the last 90 observations to provide sufficient context
+    recent = df.iloc[-90:].copy()
+    
+    fig.add_trace(go.Candlestick(
+        x=recent.index, open=recent['Open'], high=recent['High'], low=recent['Low'], close=recent['Close'],
+        name=ticker, increasing_line_color=COLORS["green"], decreasing_line_color=COLORS["red"],
+        opacity=0.8
+    ))
+    
+    # Local pattern detection logic
+    found_indices = []
+    found_labels = []
+    found_prices = []
+    
+    body = (recent['Close'] - recent['Open']).abs()
+    rng = recent['High'] - recent['Low']
+    
+    for i in range(2, len(recent)):
+        o, h, l, c = recent['Open'].iloc[i], recent['High'].iloc[i], recent['Low'].iloc[i], recent['Close'].iloc[i]
+        po, ph, pl, pc = recent['Open'].iloc[i-1], recent['High'].iloc[i-1], recent['Low'].iloc[i-1], recent['Close'].iloc[i-1]
+        ppo, pph, ppl, ppc = recent['Open'].iloc[i-2], recent['High'].iloc[i-2], recent['Low'].iloc[i-2], recent['Close'].iloc[i-2]
+        
+        detected = False
+        label = ""
+        
+        if pattern_type == "hammer_pattern":
+            # Hammer
+            if (min(o, c) - l) > 2 * body.iloc[i] and (h - max(o, c)) < 0.1 * rng.iloc[i]:
+                detected, label = True, "Hammer"
+            # Inverted Hammer
+            elif (h - max(o, c)) > 2 * body.iloc[i] and (min(o, c) - l) < 0.1 * rng.iloc[i]:
+                detected, label = True, "Inv. Hammer"
+                
+        elif pattern_type == "doji_pattern":
+            if body.iloc[i] < 0.1 * rng.iloc[i]:
+                detected, label = True, "Doji"
+            elif body.iloc[i] < 0.3 * rng.iloc[i] and (h - max(o, c)) > body.iloc[i] and (min(o, c) - l) > body.iloc[i]:
+                detected, label = True, "Spinning Top"
+                
+        elif pattern_type == "engulfing_bullish":
+            if pc < po and c > o and o <= pc and c >= po:
+                detected, label = True, "Bullish Engulfing"
+                
+        elif pattern_type == "engulfing_bearish":
+            if pc > po and c < o and o >= pc and c <= po:
+                detected, label = True, "Bearish Engulfing"
+                
+        elif pattern_type == "morning_star":
+            if ppc < ppo and body.iloc[i-1] < 0.3 * body.iloc[i-2] and c > o and c > (ppo + ppc)/2:
+                detected, label = True, "Morning Star"
+                
+        elif pattern_type == "evening_star":
+            if ppc > ppo and body.iloc[i-1] < 0.3 * body.iloc[i-2] and c < o and c < (ppo + ppc)/2:
+                detected, label = True, "Evening Star"
+                
+        elif pattern_type == "three_white":
+            if c > o and pc > po and ppc > ppo and c > pc and pc > ppc:
+                detected, label = True, "3 White Soldiers"
+                
+        elif pattern_type == "three_black":
+            if c < o and pc < po and ppc < ppo and c < pc and pc < ppc:
+                detected, label = True, "3 Black Crows"
+                
+        elif pattern_type == "piercing":
+            if pc < po and c > o and o < pl and c > (po + pc)/2:
+                detected, label = True, "Piercing Pattern"
+                
+        elif pattern_type == "dark_cloud":
+            if pc > po and c < o and o > ph and c < (po + pc)/2:
+                detected, label = True, "Dark Cloud Cover"
+
+        if detected:
+            found_indices.append(recent.index[i])
+            found_labels.append(label)
+            # Position markers slightly above/below candle for visibility
+            if "Bullish" in label or "Hammer" in label or "Morning" in label or "Piercing" in label or "White" in label:
+                found_prices.append(l * 0.99)
+            else:
+                found_prices.append(h * 1.01)
+
+    if found_indices:
+        fig.add_trace(go.Scatter(
+            x=found_indices, y=found_prices, mode="markers+text",
+            text=found_labels, textposition="bottom center",
+            marker=dict(symbol="diamond", size=12, color=COLORS["blue"], 
+                        line=dict(width=1, color="white")),
+            name="Detected Patterns"
+        ))
+        
+    fig.update_layout(
+        title=f"<strong>{pattern_type.replace('_',' ').title()}</strong> Recognition Suite",
+        height=380,
+        xaxis_rangeslider_visible=False,
+        template="plotly_white",
+        font=dict(family="DM Sans, sans-serif", size=11),
+        margin=dict(l=10, r=10, t=50, b=10),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    return fig
+
+
     # ─── SCENARIO COMPARISON ────────────────────────────────────────────────
     st.markdown("""
     <div class="section-header">
-        <div class="section-tag">MODULE 07</div>
+        <div class="section-tag">MODULE 08</div>
         <div class="section-title">Scenario Comparison Dashboard</div>
         <div class="section-subtitle">Normal vs stressed vs adversarial path comparison</div>
     </div>
@@ -2213,7 +2816,7 @@ else:
     # ─── EXPORT ─────────────────────────────────────────────────────────────
     st.markdown("""
     <div class="section-header">
-        <div class="section-tag">MODULE 08</div>
+        <div class="section-tag">MODULE 09</div>
         <div class="section-title">Export & Reporting</div>
         <div class="section-subtitle">Download simulation results and risk metrics</div>
     </div>
