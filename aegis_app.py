@@ -443,6 +443,36 @@ div[data-testid="stMetricValue"] {
     border: 1px solid var(--border-color) !important;
     border-radius: var(--radius-sm) !important;
 }
+
+/* Make toggle buttons black when active */
+button[aria-checked="true"] > div {
+    background-color: #000000 !important;
+}
+
+/* Universal selector for all expander labels to be black & bold */
+[data-testid="stExpander"] summary p {
+    color: #000000 !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+}
+
+/* Ensure the expander icon and summary wrapper are also black */
+[data-testid="stExpander"] summary {
+    color: #000000 !important;
+}
+
+/* Make toggle buttons black when active */
+[data-testid="stToggle"] button[aria-checked="true"] {
+    background-color: #000000 !important;
+}
+[data-testid="stToggle"] button[aria-checked="true"] > div {
+    background-color: #FFFFFF !important; /* White dot on black background */
+}
+
+/* General labels */
+label p, .stMarkdown p {
+    color: #000000 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1238,10 +1268,10 @@ def candlestick_patterns_fragment(valid_tickers, data_period):
         ("Dark Cloud Cover", "dark_cloud"),
     ]
 
-    pattern_expander = st.expander("<span style='color:#000000;'>📊 Show All 10 Candlestick Patterns</span>", expanded=False)
+    pattern_expander = st.expander("📊 Show All 10 Candlestick Patterns", expanded=False)
     with pattern_expander:
         render_patterns = st.toggle(
-            "**Render pattern charts**",
+            "Render pattern charts",
             value=False,
             key="toggle_candle_patterns_render",
             help="Turn on to render charts. Use the selector to render one-by-one (or all).",
@@ -1249,7 +1279,7 @@ def candlestick_patterns_fragment(valid_tickers, data_period):
 
         pattern_options = ["All (10)"] + [name for name, _ in pattern_charts]
         pattern_choice = st.selectbox(
-            "**Select pattern to render**",
+            "Select pattern to render",
             pattern_options,
             index=0,
             key="select_candle_pattern_choice",
@@ -1257,7 +1287,7 @@ def candlestick_patterns_fragment(valid_tickers, data_period):
         )
 
         if not render_patterns:
-            st.markdown('<span style="color:#000000;">Toggle **Render pattern charts** to show graphs.</span>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#000000; font-weight:500; margin-bottom:10px;">Toggle **Render pattern charts** to show graphs.</div>', unsafe_allow_html=True)
             return
 
         if pattern_choice == "All (10)":
@@ -2509,40 +2539,109 @@ else:
         st.plotly_chart(fig_dd_hist, use_container_width=True)
 
     with sim_tab4:
+        st.markdown('<div style="font-size:18px; font-weight:700; margin-bottom:16px;">🌐 Advanced 3D Risk Visualization Suite</div>', unsafe_allow_html=True)
+        
         n_time   = min(horizon_days, 30)
         t_idx    = np.linspace(0, horizon_days-1, n_time, dtype=int)
         pct_range = np.arange(5, 95, 10)
-        Z = np.array([[np.percentile(paths[:, t], p) for t in t_idx] for p in pct_range])
+        
+        c1, c2 = st.columns(2)
+        
+        # --- PLOT 1: RISK SURFACE ---
+        with c1:
+            Z_val = np.array([[np.percentile(paths[:, t], p) for t in t_idx] for p in pct_range])
+            fig_3d_val = go.Figure(go.Surface(
+                x=t_idx, y=pct_range, z=Z_val,
+                colorscale="Viridis", name="Portfolio Value",
+                contours=dict(z=dict(show=True, usecolormap=True, project=dict(z=True)))
+            ))
+            fig_3d_val.update_layout(
+                title="1. Portfolio Value Surface (Time × Percentile)",
+                scene=dict(xaxis_title="Day", yaxis_title="Percentile", zaxis_title="Value"),
+                height=450, margin=dict(l=0, r=0, b=0, t=40)
+            )
+            st.plotly_chart(fig_3d_val, use_container_width=True)
 
-        fig_3d = go.Figure(go.Surface(
-            x=t_idx, y=pct_range, z=Z,
-            colorscale=[
-                [0.0, "#DC2626"], [0.25, "#D97706"],
-                [0.5, "#F3F4F6"], [0.75, "#1A56DB"], [1.0, "#059669"]
-            ],
-            contours=dict(
-                x=dict(show=True, color="rgba(0,0,0,0.1)"),
-                y=dict(show=True, color="rgba(0,0,0,0.1)")
-            ),
-            opacity=0.92
+        # --- PLOT 2: DRAWDOWN SURFACE ---
+        with c2:
+            all_peak = np.maximum.accumulate(paths, axis=1)
+            all_dd   = (paths - all_peak) / all_peak * 100
+            Z_dd     = np.array([[np.percentile(all_dd[:, t], p) for t in t_idx] for p in pct_range])
+            fig_3d_dd = go.Figure(go.Surface(
+                x=t_idx, y=pct_range, z=Z_dd,
+                colorscale="RdBu", reversescale=True,
+                contours=dict(z=dict(show=True, usecolormap=True, project=dict(z=True)))
+            ))
+            fig_3d_dd.update_layout(
+                title="2. Drawdown Surface (% Loss)",
+                scene=dict(xaxis_title="Day", yaxis_title="Percentile", zaxis_title="DD %"),
+                height=450, margin=dict(l=0, r=0, b=0, t=40)
+            )
+            st.plotly_chart(fig_3d_dd, use_container_width=True)
+
+        c3, c4 = st.columns(2)
+
+        # --- PLOT 3: RETURN DENSITY EVOLUTION ---
+        with c3:
+            ret_bins = np.linspace(-0.25, 0.25, 30)
+            densities = []
+            for t in t_idx:
+                rets = (paths[:, t] - 100) / 100
+                h, _ = np.histogram(rets, bins=ret_bins, density=True)
+                densities.append(h)
+            Z_dens = np.array(densities).T
+            fig_3d_dens = go.Figure(go.Surface(
+                x=t_idx, y=ret_bins[:-1], z=Z_dens,
+                colorscale="Plasma",
+                contours=dict(z=dict(show=True, usecolormap=True, project=dict(z=True)))
+            ))
+            fig_3d_dens.update_layout(
+                title="3. Return Density Evolution (Distribution Over Time)",
+                scene=dict(xaxis_title="Day", yaxis_title="Return", zaxis_title="Density"),
+                height=450, margin=dict(l=0, r=0, b=0, t=40)
+            )
+            st.plotly_chart(fig_3d_dens, use_container_width=True)
+
+        # --- PLOT 4: VOLATILITY DISPERSION ---
+        with c4:
+            # Moving std of paths (approx volatility)
+            Z_vol = np.zeros((len(pct_range), len(t_idx)))
+            for i, t in enumerate(t_idx):
+                window = paths[:, max(0, t-5):t+1]
+                if window.shape[1] > 1:
+                    vols = np.std(np.diff(window, axis=1) / window[:, :-1], axis=1) * np.sqrt(252) * 100
+                else:
+                    vols = np.zeros(paths.shape[0])
+                for j, p in enumerate(pct_range):
+                    Z_vol[j, i] = np.percentile(vols, p)
+            
+            fig_3d_vol = go.Figure(go.Surface(
+                x=t_idx, y=pct_range, z=Z_vol,
+                colorscale="YlOrRd",
+                contours=dict(z=dict(show=True, usecolormap=True, project=dict(z=True)))
+            ))
+            fig_3d_vol.update_layout(
+                title="4. Simulated Volatility Dispersion",
+                scene=dict(xaxis_title="Day", yaxis_title="Percentile", zaxis_title="Ann. Vol %"),
+                height=450, margin=dict(l=0, r=0, b=0, t=40)
+            )
+            st.plotly_chart(fig_3d_vol, use_container_width=True)
+
+        # --- PLOT 5: MOMENTUM ACCELERATION LANDSCAPE ---
+        # Multi-axis view
+        mom_vals = np.gradient(paths, axis=1)
+        Z_mom    = np.array([[np.percentile(mom_vals[:, t], p) for t in t_idx] for p in pct_range])
+        fig_3d_mom = go.Figure(go.Surface(
+            x=t_idx, y=pct_range, z=Z_mom,
+            colorscale="RdYlGn",
+            contours=dict(z=dict(show=True, usecolormap=True, project=dict(z=True)))
         ))
-        fig_3d.update_layout(
-            title="3D Risk Surface — Time × Percentile × Portfolio Value",
-            scene=dict(
-                xaxis_title="Day",
-                yaxis_title="Percentile",
-                zaxis_title="Portfolio Value",
-                bgcolor="rgba(248,250,255,0.8)",
-                xaxis=dict(gridcolor="rgba(0,0,0,0.05)"),
-                yaxis=dict(gridcolor="rgba(0,0,0,0.05)"),
-                zaxis=dict(gridcolor="rgba(0,0,0,0.05)"),
-            ),
-            height=560,
-            paper_bgcolor="rgba(0,0,0,0)",
-            font=dict(family="DM Sans", size=11),
-            margin=dict(l=10, r=10, t=50, b=10)
+        fig_3d_mom.update_layout(
+            title="5. Portfolio Momentum Landscape (Velocity of Change)",
+            scene=dict(xaxis_title="Day", yaxis_title="Percentile", zaxis_title="Velocity"),
+            height=550, margin=dict(l=10, r=10, b=0, t=50)
         )
-        st.plotly_chart(fig_3d, use_container_width=True)
+        st.plotly_chart(fig_3d_mom, use_container_width=True)
 
     with sim_tab5:
         vis_wts_arr = np.ones(len(valid_tickers)) / len(valid_tickers) * 100
