@@ -6,13 +6,26 @@
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
 </p>
 
-Aegis is an institutional-grade risk intelligence platform designed for adversarial scenario generation, tail risk quantification, and correlation breakdown simulation. Built with Streamlit, Plotly, and financial modeling techniques.
+Aegis is an institutional-grade risk intelligence platform designed for adversarial scenario generation, tail risk quantification, and correlation breakdown simulation. Built with Streamlit, Plotly, and advanced financial modeling techniques.
 
-![Aegis Platform](https://via.placeholder.com/800x400?text=Aegis+Stress+Testing+Platform)
+**Live App**: [https://aegis-stress-testing-platform.streamlit.app/](https://aegis-stress-testing-platform.streamlit.app/)
 
 ---
 
-## ✨ Features
+## Overview
+
+Aegis provides comprehensive tools for portfolio stress testing and risk analysis:
+
+- **Monte Carlo Simulation** - Generate thousands of realistic market scenarios
+- **Tail Risk Analytics** - VaR, CVaR, Maximum Drawdown, Kurtosis, Skewness
+- **Market Regime Detection** - Classify market conditions (Bull, Normal, Stress, Crisis)
+- **Advanced Charting** - 20+ candlestick variants, technical indicators, 3D visualizations
+- **Stress Testing** - Volatility shock, drift shift, correlation crush scenarios
+- **Candlestick Pattern Recognition** - AI-powered pattern detection and signal generation
+
+---
+
+## Features
 
 ### 📊 Comprehensive Analytics
 - **Monte Carlo Simulation** - Run thousands of scenarios with customizable parameters
@@ -20,7 +33,8 @@ Aegis is an institutional-grade risk intelligence platform designed for adversar
 - **Regime Detection Engine** - Classify market regimes (Bull, Normal, Stress, Crisis)
 
 ### 🕯️ Advanced Charting
-- **20+ Candlestick Variants** - Standard, Heikin-Ashi, Renko, Ichimoku, and more
+- **20+ Candlestick Variants** - Standard, Heikin-Ashi, Renko, Kagi, Ichimoku, Zigzag, Multi-Timeframe
+- **10 Candlestick Patterns** - Hammer, Doji, Engulfing, Morning/Evening Star, and more
 - **Technical Analysis** - Bollinger Bands, RSI, MACD, Moving Averages
 - **3D Risk Surface** - Multi-dimensional visualization of portfolio risk
 
@@ -31,14 +45,27 @@ Aegis is an institutional-grade risk intelligence platform designed for adversar
 - **Correlation Matrix** - Asset correlation heatmap
 
 ### ⚡ Stress Testing
-- **Volatility Shock** - Simulate volatility spikes
+- **Volatility Shock** - Simulate VIX spikes
 - **Drift Shift** - Model bear market scenarios
 - **Correlation Crush** - Test portfolio resilience during market stress
-- **Tail Amplification** - Fat-tail scenario generation with VAE & Bootstrap
+- **Fat-Tail Scenarios** - VAE & Bootstrap tail amplification
 
 ---
 
-## 🚀 Getting Started
+## Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| **Streamlit** | Web UI Framework |
+| **Plotly** | Interactive Visualizations |
+| **NumPy** | Numerical Computing |
+| **Pandas** | Data Manipulation |
+| **SciPy** | Statistical Functions |
+| **yfinance** | Market Data API |
+
+---
+
+## Getting Started
 
 ### Prerequisites
 - Python 3.10+
@@ -79,9 +106,11 @@ pip install -r requirements.txt
 streamlit run aegis_app.py
 ```
 
+Or visit the live app: [https://aegis-stress-testing-platform.streamlit.app/](https://aegis-stress-testing-platform.streamlit.app/)
+
 ---
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Selecting Assets
 - Use the **multiselect dropdown** to choose from 70+ trending tickers
@@ -89,7 +118,7 @@ streamlit run aegis_app.py
 - Select asset class: Equities, Crypto, or Mixed
 
 ### Configuring Simulations
-- **Monte Carlo**: Set number of simulations (500-50,000)
+- **Monte Carlo**: Set number of simulations (500-25,000)
 - **Forecast Horizon**: 30-252 trading days
 - **Confidence Level**: 90-99%
 
@@ -103,22 +132,14 @@ streamlit run aegis_app.py
 - **Drift Shift**: Model negative drift scenarios
 - **Correlation Crush**: Test during correlation breakdown
 
----
-
-## 🛠️ Tech Stack
-
-| Technology | Purpose |
-|------------|---------|
-| **Streamlit** | Web UI Framework |
-| **Plotly** | Interactive Visualizations |
-| **NumPy** | Numerical Computing |
-| **Pandas** | Data Manipulation |
-| **SciPy** | Statistical Functions |
-| **yfinance** | Market Data API |
+### Candlestick Pattern Analysis
+- Select a ticker for pattern analysis
+- Toggle "Render pattern charts" to display
+- Choose specific patterns or view all 10
 
 ---
 
-## 📊 Sample Output
+## Sample Output
 
 The platform provides:
 
@@ -127,22 +148,23 @@ The platform provides:
 - **Tail Distribution** - Histogram with VaR/CVaR markers
 - **Drawdown Analysis** - Waterfall and histogram views
 - **3D Surface** - Time × Percentile × Portfolio Value
+- **Candlestick Charts** - 20+ variants with pattern recognition
 
 ---
 
-## 📝 License
+## License
 
 MIT License - See [LICENSE](LICENSE) for details.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📧 Contact
+## Contact
 
 For questions or feedback, reach out to:
 - **Email**: sourish713321@gmail.com
