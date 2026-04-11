@@ -32,22 +32,22 @@ st.markdown("""
 
 /* ── Root Variables ── */
 :root {
-    --bg-primary: #FAFAFA;
-    --bg-secondary: #F4F6F9;
+    --bg-primary: #F8FAFF;
+    --bg-secondary: #F1F5FF;
     --bg-card: #FFFFFF;
-    --bg-panel: #F0F3F8;
-    --border-color: #E2E8F0;
-    --border-accent: #C8D8F0;
-    --text-primary: #0D1B2A;
-    --text-secondary: #0D1B2A;
-    --text-muted: #0D1B2A;
-    --accent-blue: #1A56DB;
-    --accent-navy: #0F3460;
-    --accent-teal: #0EA5E9;
-    --accent-red: #DC2626;
-    --accent-amber: #D97706;
-    --accent-green: #059669;
-    --accent-purple: #7C3AED;
+    --bg-panel: #EEF2FF;
+    --border-color: #D8E0F0;
+    --border-accent: #C7D2FE;
+    --text-primary: #0B1220;
+    --text-secondary: #334155;
+    --text-muted: #64748B;
+    --accent-blue: #4F46E5;
+    --accent-navy: #0B2A6F;
+    --accent-teal: #14B8A6;
+    --accent-red: #EF4444;
+    --accent-amber: #F59E0B;
+    --accent-green: #10B981;
+    --accent-purple: #A855F7;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
     --shadow-lg: 0 10px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
@@ -63,7 +63,7 @@ html, body, [class*="css"] {
 }
 
 .stApp {
-    background: linear-gradient(145deg, #F0F4FF 0%, #FAFAFA 40%, #F5F0FF 100%) !important;
+    background: linear-gradient(145deg, #ECFEFF 0%, #F8FAFF 45%, #F5F3FF 100%) !important;
 }
 
 /* ── Navbar ── */
@@ -71,7 +71,7 @@ html, body, [class*="css"] {
     position: sticky;
     top: 0;
     z-index: 999;
-    background: rgba(255,255,255,0.92);
+    background: rgba(248,250,255,0.90);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border-color);
@@ -90,19 +90,19 @@ html, body, [class*="css"] {
 .aegis-logo {
     width: 38px;
     height: 38px;
-    background: linear-gradient(135deg, #0F3460 0%, #1A56DB 50%, #7C3AED 100%);
+    background: linear-gradient(135deg, var(--accent-navy) 0%, var(--accent-blue) 50%, var(--accent-purple) 100%);
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
-    box-shadow: 0 4px 12px rgba(26,86,219,0.30);
+    box-shadow: 0 4px 12px rgba(79,70,229,0.28);
 }
 .aegis-brand-text {
     font-size: 20px;
     font-weight: 700;
     letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #0F3460, #1A56DB);
+    background: linear-gradient(135deg, var(--accent-navy), var(--accent-blue));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -115,15 +115,15 @@ html, body, [class*="css"] {
 .aegis-nav-link {
     padding: 8px 16px;
     border-radius: 6px;
-    background: rgba(13, 27, 42, 0.1);
-    color: #0D1B2A;
+    background: rgba(11, 18, 32, 0.08);
+    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 .aegis-nav-link:hover {
-    background: #0D1B2A;
+    background: var(--text-primary);
     color: white;
 }
 .aegis-status {
@@ -158,18 +158,18 @@ html, body, [class*="css"] {
     font-weight: 600;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #0D1B2A;
+    color: var(--text-muted);
     margin-bottom: 6px;
 }
 .section-title {
     font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.5px;
-    color: #0D1B2A;
+    color: var(--text-primary);
 }
 .section-subtitle {
     font-size: 13px;
-    color: #0D1B2A;
+    color: var(--text-secondary);
     margin-top: 4px;
 }
 
@@ -220,7 +220,7 @@ html, body, [class*="css"] {
 }
 .kpi-sub {
     font-size: 12px;
-    color: #000000;
+    color: var(--text-secondary);
     margin-top: 6px;
 }
 .kpi-badge {
@@ -249,9 +249,9 @@ html, body, [class*="css"] {
 
 /* ── Info Box ── */
 .info-box {
-    background: linear-gradient(135deg, #EFF6FF, #F5F3FF);
-    border: 1px solid #C7D2FE;
-    border-left: 4px solid var(--accent-blue);
+    background: linear-gradient(135deg, rgba(79,70,229,0.10), rgba(20,184,166,0.10));
+    border: 1px solid var(--border-accent);
+    border-left: 4px solid var(--accent-teal);
     border-radius: var(--radius-sm);
     padding: 14px 18px;
     margin: 16px 0;
@@ -265,7 +265,7 @@ html, body, [class*="css"] {
 }
 .info-box-text {
     font-size: 13px;
-    color: #0D1B2A;
+    color: var(--text-secondary);
     line-height: 1.6;
 }
 
@@ -307,11 +307,11 @@ html, body, [class*="css"] {
     border-collapse: separate;
     border-spacing: 0;
     font-size: 13px;
-    color: #000000;
+    color: var(--text-secondary);
 }
 .styled-table th {
     background: var(--bg-panel);
-    color: #000000;
+    color: var(--text-primary);
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.8px;
@@ -324,7 +324,7 @@ html, body, [class*="css"] {
     padding: 10px 14px;
     border-bottom: 1px solid var(--border-color);
     font-family: 'DM Mono', monospace;
-    color: #000000;
+    color: var(--text-secondary);
 }
 .styled-table tr:last-child td { border-bottom: none; }
 
@@ -355,7 +355,7 @@ html, body, [class*="css"] {
 .aegis-footer-brand {
     font-size: 15px;
     font-weight: 700;
-    background: linear-gradient(135deg, #0F3460, #1A56DB);
+    background: linear-gradient(135deg, var(--accent-navy), var(--accent-blue));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 6px;
@@ -368,7 +368,7 @@ html, body, [class*="css"] {
 
 /* ── Streamlit overrides ── */
 .stButton > button {
-    background: linear-gradient(135deg, #0F3460, #1A56DB) !important;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)) !important;
     color: white !important;
     border: none !important;
     border-radius: var(--radius-sm) !important;
@@ -377,14 +377,14 @@ html, body, [class*="css"] {
     font-size: 14px !important;
     letter-spacing: 0.3px !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 4px 12px rgba(26,86,219,0.25) !important;
+    box-shadow: 0 4px 12px rgba(79,70,229,0.22) !important;
 }
 .stButton > button:hover {
     transform: translateY(-1px) !important;
-    box-shadow: 0 6px 20px rgba(26,86,219,0.35) !important;
+    box-shadow: 0 6px 20px rgba(79,70,229,0.30) !important;
 }
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0D1B2A 0%, #0F3460 100%) !important;
+    background: linear-gradient(180deg, #0B1220 0%, #1E293B 100%) !important;
     border-right: 1px solid rgba(255,255,255,0.08) !important;
 }
 [data-testid="stSidebar"] * {
@@ -404,7 +404,7 @@ html, body, [class*="css"] {
     color: white !important;
 }
 [data-testid="stSidebar"] .stSlider > div > div > div {
-    background: #1A56DB !important;
+    background: var(--accent-blue) !important;
 }
 [data-testid="stSidebar"] hr {
     border-color: rgba(255,255,255,0.1) !important;
@@ -476,10 +476,10 @@ def fetch_data(tickers: list, period: str = "2y") -> pd.DataFrame:
     return prices
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def fetch_ohlc_data(ticker: str, period: str = "2y") -> pd.DataFrame:
+def fetch_ohlc_data(ticker: str, period: str = "2y", auto_adjust: bool = False) -> pd.DataFrame:
     """Fetch OHLCV data - cached separately to avoid re-fetching."""
     try:
-        df = yf.download(ticker, period=period, auto_adjust=True, progress=False)
+        df = yf.download(ticker, period=period, auto_adjust=auto_adjust, progress=False)
         if df is not None and not df.empty:
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
@@ -666,9 +666,9 @@ def find_worst_paths(paths: np.ndarray, n: int = 5) -> tuple:
 
 PLOT_TEMPLATE = dict(
     layout=dict(
-        font=dict(family="DM Sans, sans-serif", size=12, color="#0D1B2A"),
+        font=dict(family="DM Sans, sans-serif", size=12, color="#0B1220"),
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(248,250,255,0.6)",
+        plot_bgcolor="rgba(241,245,255,0.65)",
         margin=dict(l=20, r=20, t=40, b=20),
         xaxis=dict(showgrid=True, gridcolor="rgba(0,0,0,0.05)", gridwidth=1,
                    zeroline=False, linecolor="rgba(0,0,0,0.1)"),
@@ -678,14 +678,14 @@ PLOT_TEMPLATE = dict(
 )
 
 COLORS = {
-    "blue":   "#1A56DB",
-    "navy":   "#0F3460",
-    "teal":   "#0EA5E9",
-    "red":    "#DC2626",
-    "amber":  "#D97706",
-    "green":  "#059669",
-    "purple": "#7C3AED",
-    "gray":   "#6B7280",
+    "blue":   "#4F46E5",  # indigo
+    "navy":   "#0B2A6F",
+    "teal":   "#14B8A6",
+    "red":    "#EF4444",
+    "amber":  "#F59E0B",
+    "green":  "#10B981",
+    "purple": "#A855F7",
+    "gray":   "#64748B",
 }
 PALETTE = [COLORS["blue"], COLORS["red"], COLORS["green"], COLORS["purple"], COLORS["amber"], COLORS["teal"]]
 
@@ -1091,6 +1091,195 @@ def create_candlestick_pattern(df, pattern_type, ticker, COLORS):
     return fig
 
 
+# ─── UI FRAGMENTS (PREVENT FULL APP RESET ON TOGGLES) ─────────────────────────
+
+@st.fragment
+def candle_variants_fragment(valid_tickers, data_period):
+    st.markdown("### 🕯️ Candlestick Chart Variants")
+
+    if not valid_tickers:
+        st.info("No valid tickers available to render candlestick variants.")
+        return
+
+    candle_ticker = st.selectbox(
+        "Select Ticker for Candle Variants",
+        valid_tickers,
+        key="candle_var_sel",
+    )
+    candle_data = fetch_ohlc_data(candle_ticker, period=data_period, auto_adjust=False)
+
+    if candle_data is None or candle_data.empty:
+        st.warning("No data available for " + str(candle_ticker))
+        return
+
+    candle_df = candle_data.copy()
+    if isinstance(candle_df.columns, pd.MultiIndex):
+        candle_df.columns = candle_df.columns.get_level_values(0)
+
+    if "Close" not in candle_df.columns:
+        st.warning("No price data available for " + str(candle_ticker))
+        return
+
+    candle_df = candle_df[[c for c in ["Open", "High", "Low", "Close", "Volume"] if c in candle_df.columns]]
+
+    variant_expander = st.expander("Show All 20 Chart Variants", expanded=True)
+    with variant_expander:
+        variant_charts = [
+            ("Standard Candlestick", "standard"),
+            ("OHLC Bars", "ohlc_bars"),
+            ("Line Chart", "line"),
+            ("Area Chart", "area"),
+            ("Heikin-Ashi", "heikin_ashi"),
+            ("Renko Chart", "renko"),
+            ("Point & Figure", "pnf"),
+            ("Kagi Chart", "kagi"),
+            ("Range Bars", "range_bars"),
+            ("Candle with Volume", "candle_volume"),
+            ("Candle with MA", "candle_ma"),
+            ("Candle with BB", "candle_bb"),
+            ("Hollow Candles", "hollow"),
+            ("Colored OHLC", "colored_ohlc"),
+            ("Trend Columns", "trend_cols"),
+            ("Price Channels", "price_channels"),
+            ("Ichimoku Cloud", "ichimoku"),
+            ("Zigzag Lines", "zigzag"),
+            ("Multi-Timeframe", "mtf"),
+            ("Comparison Overlay", "comparison"),
+        ]
+
+        render_variants = st.toggle(
+            "Render variant charts",
+            value=False,
+            key="toggle_candle_variants_render",
+            help="Turn on to render charts. Use the selector to render one-by-one (or all).",
+        )
+
+        variant_options = ["All (20)"] + [name for name, _ in variant_charts]
+        variant_choice = st.selectbox(
+            "Select variant to render",
+            variant_options,
+            index=0,
+            key="select_candle_variant_choice",
+            disabled=not render_variants,
+        )
+
+        if not render_variants:
+            st.caption("Toggle **Render variant charts** to show graphs.")
+            return
+
+        if variant_choice == "All (20)":
+            st.caption("Rendering all 20 charts may take a while.")
+            var_cols = st.columns(2)
+            for idx, (var_name, var_type) in enumerate(variant_charts):
+                with var_cols[idx % 2]:
+                    try:
+                        st.markdown(f"**{var_name}**")
+                        fig_var = create_candle_variant(candle_df, var_type, candle_ticker, COLORS)
+                        st.plotly_chart(fig_var, use_container_width=True, key=f"candle_{idx}")
+                    except Exception as e:
+                        st.caption(f"{var_name}: N/A ({e})")
+        else:
+            var_type = next(vt for vn, vt in variant_charts if vn == variant_choice)
+            st.markdown(f"**{variant_choice}**")
+            try:
+                fig_var = create_candle_variant(candle_df, var_type, candle_ticker, COLORS)
+                st.plotly_chart(fig_var, use_container_width=True, key=f"candle_single_{var_type}")
+            except Exception as e:
+                st.caption(f"{variant_choice}: N/A ({e})")
+
+
+@st.fragment
+def candlestick_patterns_fragment(valid_tickers, data_period):
+    st.markdown("""
+    <div class="section-header">
+        <div class="section-tag">MODULE 06</div>
+        <div class="section-title">Candlestick Pattern Analyzer</div>
+        <div class="section-subtitle">AI-Powered Candlestick Pattern Recognition & Signal Generation</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if not valid_tickers:
+        st.info("No valid tickers available to run pattern analysis.")
+        return
+
+    candle_pattern_ticker = st.selectbox(
+        "Select Ticker for Pattern Analysis",
+        valid_tickers,
+        key="pattern_ticker_sel",
+    )
+    pattern_data = fetch_ohlc_data(candle_pattern_ticker, period=data_period, auto_adjust=False)
+
+    if pattern_data is None or pattern_data.empty:
+        st.warning("No data available for " + str(candle_pattern_ticker))
+        return
+
+    pattern_df = pattern_data.copy()
+    if isinstance(pattern_df.columns, pd.MultiIndex):
+        pattern_df.columns = pattern_df.columns.get_level_values(0)
+
+    if "Close" not in pattern_df.columns:
+        st.warning("No price data available for " + str(candle_pattern_ticker))
+        return
+
+    pattern_df = pattern_df[[c for c in ["Open", "High", "Low", "Close", "Volume"] if c in pattern_df.columns]]
+
+    st.markdown("### <span style='color:#000000;'>🕯️ 10 Candlestick Patterns</span>", unsafe_allow_html=True)
+
+    pattern_charts = [
+        ("Hammer & Inverted Hammer", "hammer_pattern"),
+        ("Doji & Spinning Top", "doji_pattern"),
+        ("Engulfing Bullish", "engulfing_bullish"),
+        ("Engulfing Bearish", "engulfing_bearish"),
+        ("Morning Star", "morning_star"),
+        ("Evening Star", "evening_star"),
+        ("Three White Soldiers", "three_white"),
+        ("Three Black Crows", "three_black"),
+        ("Piercing Pattern", "piercing"),
+        ("Dark Cloud Cover", "dark_cloud"),
+    ]
+
+    pattern_expander = st.expander("<span style='color:#000000;'>📊 Show All 10 Candlestick Patterns</span>", expanded=False)
+    with pattern_expander:
+        render_patterns = st.toggle(
+            "**Render pattern charts**",
+            value=False,
+            key="toggle_candle_patterns_render",
+            help="Turn on to render charts. Use the selector to render one-by-one (or all).",
+        )
+
+        pattern_options = ["All (10)"] + [name for name, _ in pattern_charts]
+        pattern_choice = st.selectbox(
+            "**Select pattern to render**",
+            pattern_options,
+            index=0,
+            key="select_candle_pattern_choice",
+            disabled=not render_patterns,
+        )
+
+        if not render_patterns:
+            st.markdown('<span style="color:#000000;">Toggle **Render pattern charts** to show graphs.</span>', unsafe_allow_html=True)
+            return
+
+        if pattern_choice == "All (10)":
+            cols = st.columns(2)
+            for idx, (pattern_name, pattern_type) in enumerate(pattern_charts):
+                with cols[idx % 2]:
+                    try:
+                        st.markdown(f"**{pattern_name}**")
+                        fig_pattern = create_candlestick_pattern(pattern_df, pattern_type, candle_pattern_ticker, COLORS)
+                        st.plotly_chart(fig_pattern, use_container_width=True, key=f"pattern_{idx}")
+                    except Exception as e:
+                        st.caption(f"{pattern_name}: N/A ({e})")
+        else:
+            pattern_type = next(pt for pn, pt in pattern_charts if pn == pattern_choice)
+            st.markdown(f"**{pattern_choice}**")
+            try:
+                fig_pattern = create_candlestick_pattern(pattern_df, pattern_type, candle_pattern_ticker, COLORS)
+                st.plotly_chart(fig_pattern, use_container_width=True, key=f"pattern_single_{pattern_type}")
+            except Exception as e:
+                st.caption(f"{pattern_choice}: N/A ({e})")
+
+
 # ─── SIDEBAR ────────────────────────────────────────────────────────────────
 
 with st.sidebar:
@@ -1103,7 +1292,7 @@ with st.sidebar:
 
     st.markdown('<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.5;margin-bottom:6px;">ASSET UNIVERSE</div>', unsafe_allow_html=True)
 
-    asset_class = st.selectbox("Asset Class", ["Equities", "Crypto", "Mixed"])
+    asset_class = st.selectbox("Asset Class", ["Equities", "Crypto", "Mixed"], key="asset_class")
 
     EQUITY_DEFAULTS = ["AAPL", "MSFT", "GOOGL", "JPM", "XOM"]
     CRYPTO_DEFAULTS = ["BTC-USD", "ETH-USD", "SOL-USD"]
@@ -1130,44 +1319,44 @@ with st.sidebar:
             key="ticker_multiselect"
         )
     with col_ticker_text:
-        tickers_input = st.text_input("Custom tickers", value="", placeholder="AAPL, ...")
+        tickers_input = st.text_input("Custom tickers", value="", placeholder="AAPL, ...", key="custom_tickers_input")
     
     dropdown_tickers = [t.strip().upper() for t in selected_from_dropdown if t.strip()]
     custom_tickers = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
     tickers = list(dict.fromkeys(dropdown_tickers + custom_tickers))[:6]
 
-    data_period = st.selectbox("Historical Period", ["6mo", "1y", "2y", "5y"], index=2)
+    data_period = st.selectbox("Historical Period", ["6mo", "1y", "2y", "5y"], index=2, key="data_period")
 
     st.markdown("---")
     st.markdown('<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.5;margin-bottom:6px;">MONTE CARLO</div>', unsafe_allow_html=True)
 
-    n_simulations = st.select_slider("Simulations", options=[500, 1000, 2500, 5000, 10000], value=2500)
-    horizon_days  = st.slider("Forecast Horizon (days)", 30, 252, 90)
-    confidence    = st.slider("Confidence Level", 0.90, 0.99, 0.95, 0.01)
+    n_simulations = st.select_slider("Simulations", options=[500, 1000, 2500, 5000, 10000], value=2500, key="n_simulations")
+    horizon_days  = st.slider("Forecast Horizon (days)", 30, 252, 90, key="horizon_days")
+    confidence    = st.slider("Confidence Level", 0.90, 0.99, 0.95, 0.01, key="confidence")
 
     st.markdown("---")
     st.markdown('<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.5;margin-bottom:6px;">GENERATIVE ENGINE</div>', unsafe_allow_html=True)
 
-    gen_model     = st.selectbox("Scenario Model", ["VAE (Fat-Tail)", "Block Bootstrap", "Both (Ensemble)"])
-    tail_amplify  = st.slider("Tail Amplification ×", 1.0, 3.0, 1.5, 0.1)
-    block_size    = st.slider("Bootstrap Block Size", 5, 30, 10)
+    gen_model     = st.selectbox("Scenario Model", ["VAE (Fat-Tail)", "Block Bootstrap", "Both (Ensemble)"], key="gen_model")
+    tail_amplify  = st.slider("Tail Amplification ×", 1.0, 3.0, 1.5, 0.1, key="tail_amplify")
+    block_size    = st.slider("Bootstrap Block Size", 5, 30, 10, key="block_size")
 
     st.markdown("---")
     st.markdown('<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.5;margin-bottom:6px;">ADVERSARIAL STRESS</div>', unsafe_allow_html=True)
 
-    vol_shock      = st.slider("Volatility Shock", 0.0, 2.0, 0.5, 0.1)
-    drift_shift    = st.slider("Drift Shift (bear bias)", -0.50, 0.0, -0.15, 0.01)
-    corr_crush     = st.slider("Correlation Crush", 0.0, 1.0, 0.3, 0.05)
-    corr_regime    = st.selectbox("Correlation Regime", ["normal", "crisis", "anti_correlation", "regime_switch"])
+    vol_shock      = st.slider("Volatility Shock", 0.0, 2.0, 0.5, 0.1, key="vol_shock")
+    drift_shift    = st.slider("Drift Shift (bear bias)", -0.50, 0.0, -0.15, 0.01, key="drift_shift")
+    corr_crush     = st.slider("Correlation Crush", 0.0, 1.0, 0.3, 0.05, key="corr_crush")
+    corr_regime    = st.selectbox("Correlation Regime", ["normal", "crisis", "anti_correlation", "regime_switch"], key="corr_regime")
 
     st.markdown("---")
     st.markdown('<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.5;margin-bottom:6px;">WEIGHTS</div>', unsafe_allow_html=True)
 
-    weight_mode = st.radio("Portfolio Weights", ["Equal Weight", "Custom"])
+    weight_mode = st.radio("Portfolio Weights", ["Equal Weight", "Custom"], key="weight_mode")
     custom_weights = {}
     if weight_mode == "Custom" and tickers:
         for t in tickers:
-            custom_weights[t] = st.slider(f"{t} weight", 0.0, 1.0, 1.0/len(tickers), 0.05)
+            custom_weights[t] = st.slider(f"{t} weight", 0.0, 1.0, 1.0/len(tickers), 0.05, key=f"weight_{t}")
 
     st.markdown("---")
     run_btn = st.button("🚀  Run Stress Test", use_container_width=True)
@@ -1178,9 +1367,9 @@ with st.sidebar:
 # Hero
 st.markdown("""
 <div style="text-align:center; padding: 10px 0 30px;">
-    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#1A56DB;font-weight:600;margin-bottom:10px;">INSTITUTIONAL RISK INTELLIGENCE</div>
-    <h1 style="font-size:42px;font-weight:800;letter-spacing:-1.5px;color:#0D1B2A;margin:0 0 12px;">
-        Aegis <span style="background:linear-gradient(135deg,#1A56DB,#7C3AED);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Stress Testing</span> Platform
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent-blue);font-weight:600;margin-bottom:10px;">INSTITUTIONAL RISK INTELLIGENCE</div>
+    <h1 style="font-size:42px;font-weight:800;letter-spacing:-1.5px;color:var(--text-primary);margin:0 0 12px;">
+        Aegis <span style="background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Stress Testing</span> Platform
     </h1>
     <p style="font-size:15px;color:#718096;max-width:600px;margin:0 auto;line-height:1.6;">
         Adversarial scenario generation · Tail risk quantification · Correlation breakdown simulation
@@ -1246,7 +1435,7 @@ with price_tab1:
 
 with price_tab2:
     ohlc_ticker = st.selectbox("Select Ticker for Candlestick", valid_tickers, key="ohlc_sel")
-    ohlc_data = yf.download(ohlc_ticker, period=data_period, progress=False)
+    ohlc_data = fetch_ohlc_data(ohlc_ticker, period=data_period, auto_adjust=False)
     
     if ohlc_data is not None and len(ohlc_data) > 0:
         ohlc_df = ohlc_data.copy()
@@ -1278,20 +1467,23 @@ with price_tab2:
             fig_candle.update_layout(xaxis_rangeslider_visible=False)
             st.plotly_chart(fig_candle, use_container_width=True, key="candle_main")
             
+            close_chg_pct = ((ohlc_df["Close"].iloc[-1] / ohlc_df["Close"].iloc[-2]) - 1) * 100 if len(ohlc_df) > 1 else 0.0
+            close_chg_color = COLORS["green"] if close_chg_pct >= 0 else COLORS["red"]
+
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown(f"""
                 <div style="background:#fff; border:1px solid #E2E8F0; border-radius:8px; padding:16px; text-align:center;">
                     <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:#718096; margin-bottom:4px;">Latest Close</div>
-                    <div style="font-size:20px; font-weight:700; color:#0D1B2A;">${ohlc_df['Close'].iloc[-1]:,.2f}</div>
-                    <div style="font-size:14px; color:#DC2626;">{((ohlc_df['Close'].iloc[-1] / ohlc_df['Close'].iloc[-2]) - 1) * 100:.2f}%</div>
+                    <div style="font-size:20px; font-weight:700; color:var(--text-primary);">${ohlc_df['Close'].iloc[-1]:,.2f}</div>
+                    <div style="font-size:14px; color:{close_chg_color};">{close_chg_pct:.2f}%</div>
                 </div>
                 """, unsafe_allow_html=True)
             with col2:
                 st.markdown(f"""
                 <div style="background:#fff; border:1px solid #E2E8F0; border-radius:8px; padding:16px; text-align:center;">
                     <div style="font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:#718096; margin-bottom:4px;">Volume</div>
-                    <div style="font-size:20px; font-weight:700; color:#0D1B2A;">{ohlc_df['Volume'].iloc[-1]:,.0f}</div>
+                    <div style="font-size:20px; font-weight:700; color:var(--text-primary);">{ohlc_df['Volume'].iloc[-1]:,.0f}</div>
                 </div>
                 """, unsafe_allow_html=True)
         else:
@@ -1303,7 +1495,7 @@ with price_tab3:
     tech_ticker = st.selectbox("Select Ticker for Technicals", valid_tickers, key="tech_sel")
     tech_data = prices[tech_ticker].dropna()
     
-    ma_window = st.slider("MA Window", 10, 100, 20)
+    ma_window = st.slider("MA Window", 10, 100, 20, key="ma_window")
     tech_df = pd.DataFrame({"Price": tech_data})
     tech_df["SMA"] = tech_data.rolling(ma_window).mean()
     tech_df["EMA"] = tech_data.ewm(span=ma_window).mean()
@@ -1336,7 +1528,7 @@ with price_tab3:
                                   line=dict(color=COLORS["blue"], width=1.2)), row=1, col=1)
     
     if len(valid_tickers) > 0:
-        vol_data = yf.download(tech_ticker, period=data_period, progress=False)
+        vol_data = fetch_ohlc_data(tech_ticker, period=data_period, auto_adjust=False)
         if vol_data is not None and not vol_data.empty:
             if isinstance(vol_data.columns, pd.MultiIndex):
                 vol_data.columns = vol_data.columns.get_level_values(0)
@@ -1381,7 +1573,7 @@ with price_tab4:
         st.markdown(f"- **{t1}** ↔ **{t2}**: <span style='color:{color}'>{c:.3f}</span>", unsafe_allow_html=True)
 
 with price_tab5:
-    vol_window = st.slider("Rolling Volatility Window", 10, 100, 30)
+    vol_window = st.slider("Rolling Volatility Window", 10, 100, 30, key="vol_window")
     fig_risk = make_subplots(rows=2, cols=2,
                              subplot_titles=["Rolling Volatility (30d)", "Cumulative Returns", 
                                            "Drawdown Series", "Return Quantiles"])
@@ -1456,82 +1648,8 @@ with price_tab5:
     )
     st.plotly_chart(fig_radar, use_container_width=True, key="radar_chart")
 
-# Regime detection
-    candle_ticker = st.selectbox("Select Ticker for Candle Variants", valid_tickers, key="candle_var_sel")
-    candle_data = yf.download(candle_ticker, period=data_period, progress=False)
-    
-    if candle_data is not None and not candle_data.empty:
-        candle_df = candle_data.copy()
-        if isinstance(candle_df.columns, pd.MultiIndex):
-            candle_df.columns = candle_df.columns.get_level_values(0)
-        
-        if 'Close' in candle_df.columns:
-            candle_df = candle_df[['Open', 'High', 'Low', 'Close', 'Volume']]
-            
-            st.markdown("### 🕯️ Candlestick Chart Variants")
-            
-            variant_expander = st.expander("Show All 20 Chart Variants", expanded=True)
-            with variant_expander:
-                variant_charts = [
-                    ("Standard Candlestick", "standard"),
-                    ("OHLC Bars", "ohlc_bars"),
-                    ("Line Chart", "line"),
-                    ("Area Chart", "area"),
-                    ("Heikin-Ashi", "heikin_ashi"),
-                    ("Renko Chart", "renko"),
-                    ("Point & Figure", "pnf"),
-                    ("Kagi Chart", "kagi"),
-                    ("Range Bars", "range_bars"),
-                    ("Candle with Volume", "candle_volume"),
-                    ("Candle with MA", "candle_ma"),
-                    ("Candle with BB", "candle_bb"),
-                    ("Hollow Candles", "hollow"),
-                    ("Colored OHLC", "colored_ohlc"),
-                    ("Trend Columns", "trend_cols"),
-                    ("Price Channels", "price_channels"),
-                    ("Ichimoku Cloud", "ichimoku"),
-                    ("Zigzag Lines", "zigzag"),
-                    ("Multi-Timeframe", "mtf"),
-                    ("Comparison Overlay", "comparison")
-                ]
-
-                render_variants = st.toggle(
-                    "Render variant charts",
-                    value=False,
-                    key="toggle_candle_variants_render",
-                    help="Turn on to render charts. Use the selector to render one-by-one (or all).",
-                )
-
-                variant_options = ["All (20)"] + [name for name, _ in variant_charts]
-                variant_choice = st.selectbox(
-                    "Select variant to render",
-                    variant_options,
-                    index=0,
-                    key="select_candle_variant_choice",
-                    disabled=not render_variants,
-                )
-
-                if not render_variants:
-                    st.caption("Toggle **Render variant charts** to show graphs.")
-                else:
-                    if variant_choice == "All (20)":
-                        var_cols = st.columns(2)
-                        for idx, (var_name, var_type) in enumerate(variant_charts):
-                            with var_cols[idx % 2]:
-                                try:
-                                    st.markdown(f"**{var_name}**")
-                                    fig_var = create_candle_variant(candle_df, var_type, candle_ticker, COLORS)
-                                    st.plotly_chart(fig_var, use_container_width=True, key=f"candle_{idx}")
-                                except Exception as e:
-                                    st.caption(f"{var_name}: N/A ({e})")
-                    else:
-                        var_type = next(vt for vn, vt in variant_charts if vn == variant_choice)
-                        st.markdown(f"**{variant_choice}**")
-                        try:
-                            fig_var = create_candle_variant(candle_df, var_type, candle_ticker, COLORS)
-                            st.plotly_chart(fig_var, use_container_width=True, key=f"candle_single_{var_type}")
-                        except Exception as e:
-                            st.caption(f"{variant_choice}: N/A ({e})")
+# Regime detection (fragmented so toggles don't reset the full app)
+    candle_variants_fragment(valid_tickers, data_period)
 
 def _create_candle_variant_legacy(df, variant_type, ticker, COLORS):
     fig = go.Figure()
@@ -1740,7 +1858,7 @@ def _create_candle_variant_legacy(df, variant_type, ticker, COLORS):
         fig.add_trace(go.Scatter(
             x=df.index, y=norm_close, mode='lines', name="Price (normalized)",
             line=dict(color=COLORS["navy"], width=2), fill='tozeroy',
-            fillcolor='rgba(26,86,219,0.1)'
+            fillcolor='rgba(79,70,229,0.12)'
         ))
         fig.add_hline(y=100, line_dash="dash", line_color=COLORS["gray"])
         fig.update_layout(title=f"Comparison — {ticker} (Base=100)", height=280)
@@ -1756,7 +1874,7 @@ def _create_candle_variant_legacy(df, variant_type, ticker, COLORS):
 
 # Regime detection
     adv_ticker = st.selectbox("Select Ticker for Advanced Charts", valid_tickers, key="adv_chart_sel")
-    adv_data = yf.download(adv_ticker, period=data_period, progress=False)
+    adv_data = fetch_ohlc_data(adv_ticker, period=data_period, auto_adjust=False)
     
     if adv_data is not None and len(adv_data) > 0:
         adv_df = adv_data.copy()
@@ -1768,7 +1886,7 @@ def _create_candle_variant_legacy(df, variant_type, ticker, COLORS):
             
             st.markdown("### 📊 Advanced Chart Types")
             
-            PALETTE = ["#1A56DB", "#DC2626", "#059669", "#7C3AED", "#D97706", "#0EA5E9"]
+            PALETTE = [COLORS["blue"], COLORS["red"], COLORS["green"], COLORS["purple"], COLORS["amber"], COLORS["teal"]]
             vis_wts_arr = np.ones(len(valid_tickers)) / len(valid_tickers) * 100
             
             adv_charts = [
@@ -1827,7 +1945,7 @@ def create_advanced_chart(df, chart_type, ticker, COLORS, tickers_list=None, pri
     if prices_df is None:
         prices_df = df
     
-    PALETTE = ["#1A56DB", "#DC2626", "#059669", "#7C3AED", "#D97706", "#0EA5E9"]
+    PALETTE = [COLORS["blue"], COLORS["red"], COLORS["green"], COLORS["purple"], COLORS["amber"], COLORS["teal"]]
     vis_wts = np.ones(len(tickers_list)) / len(tickers_list) * 100
     
     if chart_type == "line":
@@ -2106,14 +2224,14 @@ for i, tkr in enumerate(valid_tickers):
 if len(valid_tickers) > 0:
     r0 = returns_df[valid_tickers[0]].dropna()
     regime_series = detect_regime(r0).dropna()
-    reg_color_map = {"Bull": "#3B82F6", "Normal": "#059669", "Stress": "#D97706", "Crisis": "#DC2626"}
+    reg_color_map = {"Bull": COLORS["blue"], "Normal": COLORS["green"], "Stress": COLORS["amber"], "Crisis": COLORS["red"]}
     regime_num = regime_series.map({"Bull": 0, "Normal": 1, "Stress": 2, "Crisis": 3})
     fig_regime = go.Figure()
     fig_regime.add_trace(go.Scatter(
         x=regime_series.index, y=regime_num,
         mode="lines", fill="tozeroy",
         line=dict(width=0),
-        fillcolor="rgba(26,86,219,0.15)",
+        fillcolor="rgba(79,70,229,0.15)",
         name="Regime Level"
     ))
     fig_regime.update_layout(
@@ -2188,7 +2306,7 @@ if not run_btn:
     st.markdown("""
     <div class="glass-panel" style="text-align:center;padding:48px 24px;">
         <div style="font-size:40px;margin-bottom:16px;">🎲</div>
-        <div style="font-size:18px;font-weight:700;color:#0D1B2A;margin-bottom:8px;">Configure & Launch Simulation</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Configure & Launch Simulation</div>
         <div style="font-size:14px;color:#718096;">Set your parameters in the sidebar and press <strong>Run Stress Test</strong> to begin adversarial simulation.</div>
     </div>
     """, unsafe_allow_html=True)
@@ -2231,14 +2349,14 @@ else:
 
     # ── KPI Bar ───────────────────────────────────────────────────────────
     kpi_data = [
-        ("VALUE AT RISK", f"{metrics['var']*100:.2f}%", f"{int(confidence*100)}% confidence", "#DC2626"),
-        ("CVaR / ES",      f"{metrics['cvar']*100:.2f}%", "Expected shortfall", "#DC2626"),
-        ("MAX DRAWDOWN",   f"{metrics['worst_dd']*100:.2f}%", "Worst path", "#D97706"),
-        ("TAIL RATIO",     f"{metrics['tail_ratio']:.3f}", "Upside/Downside", "#1A56DB"),
-        ("EXCESS KURTOSIS",f"{metrics['kurtosis']:.2f}", "Fat-tail indicator", "#D97706"),
-        ("SKEWNESS",       f"{metrics['skewness']:.3f}", "Return asymmetry", "#1A56DB"),
-        ("P5 VALUE",       f"${metrics['p5']:.1f}", "5th percentile portfolio", "#DC2626"),
-        ("P95 VALUE",      f"${metrics['p95']:.1f}", "95th percentile portfolio", "#059669"),
+        ("VALUE AT RISK", f"{metrics['var']*100:.2f}%", f"{int(confidence*100)}% confidence", COLORS["red"]),
+        ("CVaR / ES",      f"{metrics['cvar']*100:.2f}%", "Expected shortfall", COLORS["red"]),
+        ("MAX DRAWDOWN",   f"{metrics['worst_dd']*100:.2f}%", "Worst path", COLORS["amber"]),
+        ("TAIL RATIO",     f"{metrics['tail_ratio']:.3f}", "Upside/Downside", COLORS["blue"]),
+        ("EXCESS KURTOSIS",f"{metrics['kurtosis']:.2f}", "Fat-tail indicator", COLORS["amber"]),
+        ("SKEWNESS",       f"{metrics['skewness']:.3f}", "Return asymmetry", COLORS["blue"]),
+        ("P5 VALUE",       f"${metrics['p5']:.1f}", "5th percentile portfolio", COLORS["red"]),
+        ("P95 VALUE",      f"${metrics['p95']:.1f}", "95th percentile portfolio", COLORS["green"]),
     ]
     
     cols = st.columns(len(kpi_data))
@@ -2493,7 +2611,7 @@ else:
             "Worst Case": f"{returns_sim.min()*100:.2f}%"
         }
         
-        st.markdown('<h3 style="color:#0D1B2A; margin-bottom:16px;">📊 Monte Carlo Statistics</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="color:var(--text-primary); margin-bottom:16px;">📊 Monte Carlo Statistics</h3>', unsafe_allow_html=True)
         mc1, mc2, mc3, mc4, mc5, mc6, mc7 = st.columns(7)
         mc_items = list(mc_stats.items())
         for idx, (k, v) in enumerate(mc_items):
@@ -2501,95 +2619,21 @@ else:
                 st.markdown(f"""
                 <div style="background:#fff; border:1px solid #E2E8F0; border-radius:8px; padding:12px; text-align:center; margin-bottom:8px;">
                     <div style="font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:#718096; margin-bottom:4px;">{k}</div>
-                    <div style="font-size:18px; font-weight:700; color:#0D1B2A;">{v}</div>
+                    <div style="font-size:18px; font-weight:700; color:var(--text-primary);">{v}</div>
                 </div>
                 """, unsafe_allow_html=True)
 
 
-    # ─── CANDLESTICK PATTERN ANALYSIS ────────────────────────────────────────────────
-    st.markdown("""
-    <div class="section-header">
-        <div class="section-tag" style="color:#000000;">MODULE 06</div>
-        <div class="section-title" style="color:#000000;">Candlestick Pattern Analyzer</div>
-        <div class="section-subtitle" style="color:#000000;">AI-Powered Candlestick Pattern Recognition & Signal Generation</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    candle_pattern_ticker = st.selectbox("Select Ticker for Pattern Analysis", valid_tickers, key="pattern_ticker_sel")
-    pattern_data = fetch_ohlc_data(candle_pattern_ticker, period=data_period)
-    
-    if pattern_data is not None and len(pattern_data) > 0:
-        pattern_df = pattern_data.copy()
-        if isinstance(pattern_df.columns, pd.MultiIndex):
-            pattern_df.columns = pattern_df.columns.get_level_values(0)
-        
-        if 'Close' in pattern_df.columns:
-            pattern_df = pattern_df[['Open', 'High', 'Low', 'Close', 'Volume']]
-            
-            st.markdown("### 🕯️ 10 Candlestick Patterns")
-            
-            pattern_charts = [
-                ("Hammer & Inverted Hammer", "hammer_pattern"),
-                ("Doji & Spinning Top", "doji_pattern"),
-                ("Engulfing Bullish", "engulfing_bullish"),
-                ("Engulfing Bearish", "engulfing_bearish"),
-                ("Morning Star", "morning_star"),
-                ("Evening Star", "evening_star"),
-                ("Three White Soldiers", "three_white"),
-                ("Three Black Crows", "three_black"),
-                ("Piercing Pattern", "piercing"),
-                ("Dark Cloud Cover", "dark_cloud"),
-            ]
-            
-            pattern_expander = st.expander("📊 Show All 10 Candlestick Patterns", expanded=False)
-            with pattern_expander:
-                st.markdown('<div style="color:#000000;">', unsafe_allow_html=True)
-                render_patterns = st.toggle(
-                    "Render pattern charts",
-                    value=False,
-                    key="toggle_candle_patterns_render",
-                    help="Turn on to render charts. Use the selector to render one-by-one (or all).",
-                )
-
-                pattern_options = ["All (10)"] + [name for name, _ in pattern_charts]
-                pattern_choice = st.selectbox(
-                    "Select pattern to render",
-                    pattern_options,
-                    index=0,
-                    key="select_candle_pattern_choice",
-                    disabled=not render_patterns,
-                )
-
-                if not render_patterns:
-                    st.markdown('<span style="color:#000000;">Toggle **Render pattern charts** to show graphs.</span>', unsafe_allow_html=True)
-                else:
-                    if pattern_choice == "All (10)":
-                        cols = st.columns(2)
-                        for idx, (pattern_name, pattern_type) in enumerate(pattern_charts):
-                            with cols[idx % 2]:
-                                try:
-                                    st.markdown(f"**{pattern_name}**")
-                                    fig_pattern = create_candlestick_pattern(pattern_df, pattern_type, candle_pattern_ticker, COLORS)
-                                    st.plotly_chart(fig_pattern, use_container_width=True, key=f"pattern_{idx}")
-                                except Exception as e:
-                                    st.caption(f"{pattern_name}: N/A ({e})")
-                    else:
-                        pattern_type = next(pt for pn, pt in pattern_charts if pn == pattern_choice)
-                        st.markdown(f"**{pattern_choice}**")
-                        try:
-                            fig_pattern = create_candlestick_pattern(pattern_df, pattern_type, candle_pattern_ticker, COLORS)
-                            st.plotly_chart(fig_pattern, use_container_width=True, key=f"pattern_single_{pattern_type}")
-                        except Exception as e:
-                            st.caption(f"{pattern_choice}: N/A ({e})")
-                st.markdown('</div>', unsafe_allow_html=True)
+    # ─── CANDLESTICK PATTERN ANALYSIS (fragmented so toggles don't reset) ────────────
+    candlestick_patterns_fragment(valid_tickers, data_period)
 
 
     # ─── RISK METRICS TABLE ─────────────────────────────────────────────────
     st.markdown("""
     <div class="section-header">
-        <div class="section-tag" style="color:#000000;">MODULE 07</div>
-        <div class="section-title" style="color:#000000;">Risk & Tail Analytics</div>
-        <div class="section-subtitle" style="color:#000000;">Professional-grade metric suite with statistical decomposition</div>
+        <div class="section-tag">MODULE 07</div>
+        <div class="section-title">Risk & Tail Analytics</div>
+        <div class="section-subtitle">Professional-grade metric suite with statistical decomposition</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -2651,7 +2695,7 @@ else:
             ("P95 Portfolio",    f"${metrics['p95']:.2f}", "95th percentile outcome"),
         ]
         for label, val, interp in stat_rows:
-            stat_table_html += f"<tr><td>{label}</td><td><strong>{val}</strong></td><td style='color:#000000;font-size:11px;'>{interp}</td></tr>"
+            stat_table_html += f"<tr><td>{label}</td><td><strong>{val}</strong></td><td style='color:var(--text-muted);font-size:11px;'>{interp}</td></tr>"
         stat_table_html += "</tbody></table>"
         st.markdown(stat_table_html, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
