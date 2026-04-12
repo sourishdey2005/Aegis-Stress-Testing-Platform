@@ -719,222 +719,6 @@ COLORS = {
 }
 PALETTE = [COLORS["blue"], COLORS["red"], COLORS["green"], COLORS["purple"], COLORS["amber"], COLORS["teal"]]
 
-ADVANCED_QUIZ_DOMAINS = [
-    {
-        "name": "Market Risk & Liquidity",
-        "questions": [
-            "Evaluate how funding liquidity deterioration can amplify market liquidity shocks in a stressed environment.",
-            "Compare the strengths and limitations of historical VaR, parametric VaR, and extreme value theory for tail losses during a liquidity crisis.",
-            "Design a scenario to test the interaction between market depth, bid-ask spread widening, and margin calls for a highly leveraged equity portfolio.",
-            "Explain how cross-asset correlation breakdown affects hedging strategies during a crisis and propose a robust mitigation approach.",
-            "Discuss the role of low-frequency volatility regimes in constructing stress scenarios for FX and interest rate exposures.",
-            "Assess the impact of central bank intervention on implied volatility surfaces across equity, currency, and commodity markets.",
-            "Formulate an approach to measure liquidity-adjusted risk metrics for a portfolio containing illiquid fixed income and structured credit positions.",
-            "Analyze the consequences of adverse selection and market impact on execution costs for large block trades under stressed conditions.",
-            "Develop a framework to distinguish between transitory and persistent shocks in high-frequency market microstructure data.",
-            "Explain how tail dependency and systemic jumps can alter the distribution of portfolio returns in extreme market moves.",
-            "Critically evaluate the use of stress factor models versus macroeconomic narrative scenarios for market risk assessment.",
-            "Propose a way to integrate option-implied skew and term structure information into a market stress testing engine.",
-            "How would you use limit order book imbalance and order flow signals to enrich a liquidity risk dashboard for front office risk managers?",
-            "Describe the implications of circuit breakers and trading halts on model risk and backtesting during flash crash events.",
-            "Explain the interaction between portfolio concentration, liquidity shocks, and regulatory capital requirements in a sell-off.",
-            "Design a stress test that captures the effect of de-leveraging by systematic strategies on a benchmark equity index.",
-            "Compare how convexity and gamma exposure contribute to market risk in derivative-heavy portfolios during a fast move.",
-            "Describe the optimal use of liquidity buffers when calibrating an intraday risk limit for proprietary trading desks.",
-            "Present a method to reconcile synthetic instrument pricing with underlying liquidity conditions under stress.",
-            "Formulate the steps to validate a market risk stress model that uses copulas to capture multi-asset tail dependence."
-        ]
-    },
-    {
-        "name": "Portfolio Construction & Optimization",
-        "questions": [
-            "Explain how robust optimization techniques can improve portfolio resilience to parameter uncertainty in covariance estimation.",
-            "Compare mean-variance optimization with conditional value-at-risk optimization for long-term strategic asset allocation.",
-            "Design a portfolio construction process that explicitly accounts for regime shifts and non-normal return distributions.",
-            "Evaluate the trade-offs between factor-based risk budgeting and equal-weighted portfolio construction in turbulent markets.",
-            "Describe how to incorporate tail dependency constraints into a multi-asset portfolio optimization problem.",
-            "How can stress scenarios be translated into portfolio allocation adjustments without violating existing investment mandates?",
-            "Propose an approach for building a minimum-risk portfolio when liquidity constraints and transaction costs are material.",
-            "Assess the effectiveness of diversification when risk drivers are highly correlated during crisis periods.",
-            "Explain how to use hierarchical risk parity methods for portfolios with more than twenty correlated asset groups.",
-            "Describe the role of dynamic leverage and de-risking rules in a target volatility portfolio under adverse conditions.",
-            "Develop a methodology to combine machine learning-driven alpha signals with risk parity allocation in a hybrid portfolio.",
-            "Compare cross-sectional and time-series factor models for portfolio construction in a macro-stress context.",
-            "Explain the limitations of using a single covariance matrix for long-horizon portfolio construction across multiple regimes.",
-            "How would you design a robust portfolio overlay for tail hedging without creating significant drag in normal markets?",
-            "Outline the risk governance controls needed when implementing systematic portfolio rebalancing in stressed environments.",
-            "Discuss how transaction cost models should be updated when simulating rebalancing during a market sell-off.",
-            "Describe the appropriate use of beta-targeting and active risk constraints in a mixed asset portfolio.",
-            "Explain how to validate a portfolio optimization system when the underlying factor structure changes abruptly.",
-            "Analyze the implications of concentration limits and position limits on optimal portfolio construction in a high-volatility regime.",
-            "Propose a scoring system to rank portfolio allocations based on stress-test performance and tail-risk contributions."
-        ]
-    },
-    {
-        "name": "Quantitative Modeling & Machine Learning",
-        "questions": [
-            "Explain how adversarial training can be used to make time-series forecasting models more robust to regime shifts.",
-            "Compare the benefits and pitfalls of using recurrent neural networks versus gradient boosting for volatility forecasting.",
-            "Design a model validation framework for machine learning models used in risk management, including backtesting and stress testing.",
-            "Discuss how feature selection should change when building predictive models for extreme tail events.",
-            "Explain the concept of model risk in machine learning and how it differs from traditional econometric model risk.",
-            "Describe how to integrate explainability techniques when deploying black-box models for trading or risk analytics.",
-            "How would you construct a synthetic training dataset to simulate rare market stress events for a neural network?",
-            "Assess the role of nonstationary input features in predicting liquidity shocks and their impact on model performance.",
-            "Describe a robust approach to calibrating a regime-switching model for volatility and correlation dynamics.",
-            "Explain how to use bootstrapping and block bootstrap techniques to preserve serial dependence in scenario generation.",
-            "Discuss the trade-offs between parametric and nonparametric density estimation for modeling fat tails.",
-            "Design a hybrid forecasting engine that blends econometric models and machine learning models for risk scenario generation.",
-            "Explain how to test for overfitting when using deep learning models in low-frequency financial data.",
-            "Describe how to use a generative adversarial network to create stress scenarios for equity index options.",
-            "Assess whether an ensemble of models improves tail-risk estimation compared with a single well-calibrated model.",
-            "Describe the process of validating a volatility surface model using both historical and implied option price data.",
-            "Explain how to incorporate macroeconomic narratives into a quantitative scenario generation pipeline.",
-            "Propose a method to quantify uncertainty around model outputs produced by a machine learning-based risk engine.",
-            "Discuss how to preserve causal relationships when using machine learning models for predictive risk analytics.",
-            "Explain how backtesting should account for structural breaks and regime changes in real-world financial data."
-        ]
-    },
-    {
-        "name": "Derivatives, Scenario & Stress Analytics",
-        "questions": [
-            "Explain how convexity and gamma exposures interact on option books under rapid market moves.",
-            "Compare top-down macroeconomic scenario design with bottom-up counterparty-specific stress tests for derivative portfolios.",
-            "Design a stress-testing workflow that captures collateral path dependency for a large interest rate swap portfolio.",
-            "Discuss the impact of jump risk and skew risk on pricing and hedging of long-dated OTC options.",
-            "Explain how to calibrate a scenario tree for multi-period derivative exposure analysis under stress.",
-            "Describe a robust way to aggregate factor shocks across FX, rates, and equity derivatives into a single risk dashboard.",
-            "How would you model margining and variation margin procyclicality in the context of central clearing stress tests?",
-            "Assess the limitations of using linear Greeks for hedging when the underlying market exhibits regime switching.",
-            "Explain how wrong-way risk can be incorporated into derivative counterparty exposure simulations.",
-            "Design a methodology to validate a VaR model for a portfolio containing exotic options and structured products.",
-            "Describe how implied volatility surface shifts should be reflected in stress scenario construction for an options desk.",
-            "Explain the importance of liquidity horizon assumptions in computing stressed expected shortfall for derivatives.",
-            "Propose a way to quantify the joint impact of currency moves and interest-rate shocks on cross-currency swaps.",
-            "Discuss the role of path dependency in pricing barrier options under stress scenario replication.",
-            "Explain how basis risk and convexity adjustments should be modeled for futures and swap hedges during a crisis.",
-            "Describe an approach to align derivative stress tests with regulatory requirements for capital and margining.",
-            "Explain how to use scenario analysis to assess optionality embedded in structured product book exposures.",
-            "Design a process to calibrate a stressed credit spread scenario for interest-rate sensitive derivative positions.",
-            "Discuss the challenges of modeling correlations between implied volatilities and underlying asset returns in stress tests.",
-            "Explain how to validate the P&L attribution of a complex derivatives portfolio under a stress scenario."
-        ]
-    },
-    {
-        "name": "Enterprise Risk Management & Governance",
-        "questions": [
-            "Explain how enterprise stress testing should be governed to maintain independence between front office and risk control.",
-            "Design a senior management reporting framework for tail-risk metrics and scenario outcomes.",
-            "Discuss the role of risk appetite statements in defining the scope and severity of stress tests.",
-            "Explain how governance structures should adapt when integrating advanced analytics into the stress testing cycle.",
-            "Describe the controls required to ensure the data lineage and auditability of scenario input assumptions.",
-            "How would you evaluate whether a firm’s stress testing program is sufficiently dynamic to capture emerging macro risks?",
-            "Propose a method to prioritize scenario development across multiple business units with limited risk analytics capacity.",
-            "Assess the importance of challenge functions in validating models used for stress testing and risk reporting.",
-            "Describe how to embed lessons from past crises into ongoing risk governance and scenario design.",
-            "Explain how to align stress testing outputs with capital planning and strategic decision-making processes.",
-            "Discuss how to manage model risk from outsourced analytics providers in enterprise risk management.",
-            "Explain how a 30-minute rapid-response quiz could be used by risk teams to certify readiness on stress testing principles.",
-            "Design an escalation path for identifying and remediating significant discrepancies between forecasted and realized stress outcomes.",
-            "Describe how to integrate qualitative expert judgment with quantitative scenario outputs in risk governance.",
-            "Explain how to measure the effectiveness of a risk management training program focused on advanced stress testing techniques.",
-            "Develop a set of criteria for selecting external scenarios that are relevant to an organization’s balance sheet exposures.",
-            "Discuss the role of control self-assessments in identifying gaps in stress testing frameworks.",
-            "Explain how to ensure consistent scenario calibration when comparing stress results across multiple legal entities.",
-            "Describe a framework for monitoring emerging model performance issues after scenario release.",
-            "Explain how board-level risk reporting should summarize advanced quantitative stress test findings without losing nuance."
-        ]
-    }
-]
-
-
-def format_quiz_time(seconds: int) -> str:
-    minutes, secs = divmod(seconds, 60)
-    return f"{minutes:02}:{secs:02}"
-
-
-def get_remaining_quiz_seconds(domain_name: str) -> int:
-    start_key = f"quiz_start_{domain_name}"
-    if start_key not in st.session_state:
-        return 1800
-    elapsed = (datetime.now() - st.session_state[start_key]).total_seconds()
-    remaining = max(0, 1800 - int(elapsed))
-    return remaining
-
-
-def advanced_quiz_fragment(valid_tickers):
-    st.markdown("""
-    <div class="section-header">
-        <div class="section-tag">MODULE 09</div>
-        <div class="section-title">Advanced Domain Question Bank</div>
-        <div class="section-subtitle">100 high-grade domain-specific questions with a 30-minute timed review mode</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if not valid_tickers:
-        st.info("No valid tickers available. Select at least one ticker to enable quiz mode.")
-        return
-
-    st.markdown("### 📚 Domain-Specific Advanced Questions")
-    st.markdown("Select a domain and start the timed 30-minute review. Each domain contains 20 high-level advanced questions.")
-
-    domain_names = [domain["name"] for domain in ADVANCED_QUIZ_DOMAINS]
-    selected_domain = st.selectbox("Select Quiz Domain", domain_names, key="quiz_domain_select")
-    quiz_domain = next(domain for domain in ADVANCED_QUIZ_DOMAINS if domain["name"] == selected_domain)
-    questions = quiz_domain["questions"]
-
-    start_key = f"quiz_start_{selected_domain}"
-    index_key = f"quiz_index_{selected_domain}"
-    active_key = f"quiz_active_{selected_domain}"
-
-    if index_key not in st.session_state:
-        st.session_state[index_key] = 0
-    if active_key not in st.session_state:
-        st.session_state[active_key] = False
-
-    if st.button("Start 30-Minute Timed Review", key=f"start_quiz_{selected_domain}"):
-        st.session_state[start_key] = datetime.now()
-        st.session_state[active_key] = True
-        st.session_state[index_key] = 0
-
-    remaining_seconds = get_remaining_quiz_seconds(selected_domain)
-    if st.session_state.get(active_key, False):
-        if remaining_seconds == 0:
-            st.warning("⏰ Time expired for this domain review. Press Reset to restart the 30-minute timer.")
-            st.session_state[active_key] = False
-        else:
-            st.success(f"⏱️ Time remaining: {format_quiz_time(remaining_seconds)}")
-
-    cols = st.columns([2, 3, 2])
-    with cols[0]:
-        st.markdown(f"**Domain:** {selected_domain}")
-    with cols[1]:
-        st.markdown(f"**Question {st.session_state[index_key] + 1} of {len(questions)}**")
-    with cols[2]:
-        if st.button("Reset Timer", key=f"reset_quiz_{selected_domain}"):
-            st.session_state.pop(start_key, None)
-            st.session_state[active_key] = False
-            st.session_state[index_key] = 0
-            remaining_seconds = 1800
-            st.info("Timer reset. Press Start to begin the 30-minute timed review.")
-
-    if st.session_state.get(active_key, False) and remaining_seconds > 0:
-        question_index = st.session_state[index_key]
-        st.markdown(f"### {questions[question_index]}")
-        st.text_area("Your notes and thoughts", key=f"quiz_answer_{selected_domain}_{question_index}", height=140)
-
-        nav_cols = st.columns(3)
-        with nav_cols[0]:
-            if st.button("Previous", key=f"prev_quiz_{selected_domain}") and question_index > 0:
-                st.session_state[index_key] -= 1
-        with nav_cols[2]:
-            if st.button("Next", key=f"next_quiz_{selected_domain}") and question_index < len(questions) - 1:
-                st.session_state[index_key] += 1
-        with nav_cols[1]:
-            st.markdown("<div style='padding:8px;background:#F8FAFF;border-radius:8px;text-align:center;'>Use Next / Previous to move through the question bank.</div>", unsafe_allow_html=True)
-    else:
-        st.info("Press Start to begin the 30-minute timed question review for this domain.")
-
 
 def apply_theme(fig):
     fig.update_layout(**PLOT_TEMPLATE["layout"])
@@ -1580,20 +1364,20 @@ def candlestick_dashboard_fragment(valid_tickers, data_period):
                 except Exception as e:
                     st.caption(f"{ticker}: Error ({e})")
 
-    st.markdown("### 🌐 10 3D Visualizations")
+    st.markdown("### 🌐 20 3D Visualizations")
     render_3d = st.toggle(
-        "Render 10 3D Charts",
+        "Render 20 3D Charts",
         value=False,
         key="toggle_3d_dashboard",
-        help="Turn on to render 10 3D visualizations."
+        help="Turn on to render 20 3D visualizations."
     )
 
     if render_3d:
         st.caption("Rendering 3D charts.")
         cols_3d = st.columns(2)
-        # Select 10 tickers for 3D
-        three_d_tickers = TRENDING_TICKERS[:10]
-        three_d_types = ["scatter3d", "surface3d", "scatter3d", "surface3d", "scatter3d", "surface3d", "scatter3d", "surface3d", "scatter3d", "surface3d"]
+        # Select 20 tickers for 3D
+        three_d_tickers = TRENDING_TICKERS[:20]
+        three_d_types = ["scatter3d", "surface3d"] * 10  # Alternate between scatter3d and surface3d
         for idx, (ticker, chart_type) in enumerate(zip(three_d_tickers, three_d_types)):
             with cols_3d[idx % 2]:
                 try:
@@ -3033,10 +2817,6 @@ else:
 
     # ─── CANDLESTICK DASHBOARD (fragmented) ────────────
     candlestick_dashboard_fragment(valid_tickers, data_period)
-
-    # ─── ADVANCED DOMAIN QUIZ (fragmented) ──────────────
-    advanced_quiz_fragment(valid_tickers)
-
 
     # ─── RISK METRICS TABLE ─────────────────────────────────────────────────
     st.markdown("""
