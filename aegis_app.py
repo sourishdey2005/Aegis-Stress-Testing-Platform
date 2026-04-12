@@ -17,6 +17,10 @@ from scipy.stats import norm, kurtosis, skew
 import warnings
 warnings.filterwarnings('ignore')
 
+# ─── STREAMLIT COMPATIBILITY HELPERS ───────────────────────────────────────
+fragment = getattr(st, "fragment", lambda func: func)
+st_toggle = getattr(st, "toggle", st.checkbox)
+
 # ─── PAGE CONFIG ─────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Aegis Risk Lab",
@@ -1123,7 +1127,7 @@ def create_candlestick_pattern(df, pattern_type, ticker, COLORS):
 
 # ─── UI FRAGMENTS (PREVENT FULL APP RESET ON TOGGLES) ─────────────────────────
 
-@st.fragment
+@fragment
 def candle_variants_fragment(valid_tickers, data_period):
     st.markdown("### 🕯️ Candlestick Chart Variants")
 
@@ -1177,7 +1181,7 @@ def candle_variants_fragment(valid_tickers, data_period):
             ("Comparison Overlay", "comparison"),
         ]
 
-        render_variants = st.toggle(
+        render_variants = st_toggle(
             "Render variant charts",
             value=False,
             key="toggle_candle_variants_render",
@@ -1218,7 +1222,7 @@ def candle_variants_fragment(valid_tickers, data_period):
                 st.caption(f"{variant_choice}: N/A ({e})")
 
 
-@st.fragment
+@fragment
 def candlestick_patterns_fragment(valid_tickers, data_period):
     st.markdown("""
     <div class="section-header">
@@ -1270,7 +1274,7 @@ def candlestick_patterns_fragment(valid_tickers, data_period):
 
     pattern_expander = st.expander("📊 Show All 10 Candlestick Patterns", expanded=False)
     with pattern_expander:
-        render_patterns = st.toggle(
+        render_patterns = st_toggle(
             "Render pattern charts",
             value=False,
             key="toggle_candle_patterns_render",
@@ -1310,7 +1314,7 @@ def candlestick_patterns_fragment(valid_tickers, data_period):
                 st.caption(f"{pattern_choice}: N/A ({e})")
 
 
-@st.fragment
+@fragment
 def candlestick_dashboard_fragment(valid_tickers, data_period):
     st.markdown("""
     <div class="section-header">
@@ -1324,7 +1328,7 @@ def candlestick_dashboard_fragment(valid_tickers, data_period):
     dashboard_tickers = TRENDING_TICKERS[:20]
 
     st.markdown("### 🕯️ 20 Candlestick Charts")
-    render_candles = st.toggle(
+    render_candles = st_toggle(
         "Render 20 Candlestick Charts",
         value=False,
         key="toggle_candle_dashboard",
@@ -1365,7 +1369,7 @@ def candlestick_dashboard_fragment(valid_tickers, data_period):
                     st.caption(f"{ticker}: Error ({e})")
 
     st.markdown("### 🌐 20 3D Visualizations")
-    render_3d = st.toggle(
+    render_3d = st_toggle(
         "Render 20 3D Charts",
         value=False,
         key="toggle_3d_dashboard",
