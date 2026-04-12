@@ -1310,6 +1310,95 @@ def candlestick_patterns_fragment(valid_tickers, data_period):
                 st.caption(f"{pattern_choice}: N/A ({e})")
 
 
+@st.fragment
+def candlestick_dashboard_fragment(valid_tickers, data_period):
+    st.markdown("""
+    <div class="section-header">
+        <div class="section-tag">MODULE 07</div>
+        <div class="section-title">Candlestick Dashboard</div>
+        <div class="section-subtitle">20 Candlestick Charts + 10 3D Visualizations for Market Analysis</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Select 20 tickers for candlesticks
+    dashboard_tickers = TRENDING_TICKERS[:20]
+
+    st.markdown("### 🕯️ 20 Candlestick Charts")
+    render_candles = st.toggle(
+        "Render 20 Candlestick Charts",
+        value=False,
+        key="toggle_candle_dashboard",
+        help="Turn on to render 20 candlestick charts for various tickers."
+    )
+
+    if render_candles:
+        st.caption("Rendering 20 candlestick charts may take time.")
+        cols = st.columns(4)
+        for idx, ticker in enumerate(dashboard_tickers):
+            with cols[idx % 4]:
+                try:
+                    candle_data = fetch_ohlc_data(ticker, period=data_period, auto_adjust=False)
+                    if candle_data is not None and not candle_data.empty:
+                        df = candle_data.copy()
+                        if isinstance(df.columns, pd.MultiIndex):
+                            df.columns = df.columns.get_level_values(0)
+                        if 'Close' in df.columns:
+                            df = df[['Open', 'High', 'Low', 'Close']]
+                            fig = go.Figure()
+                            fig.add_trace(go.Candlestick(
+                                x=df.index, open=df['Open'], high=df['High'], low=df['Low'], close=df['Close'],
+                                name=ticker, increasing_line_color=COLORS["green"], decreasing_line_color=COLORS["red"]
+                            ))
+                            fig.update_layout(
+                                title=f"{ticker}", height=200, showlegend=False,
+                                xaxis_rangeslider_visible=False,
+                                template="plotly_white",
+                                font=dict(family="DM Sans", size=8),
+                                margin=dict(l=10, r=10, t=30, b=10)
+                            )
+                            st.plotly_chart(fig, use_container_width=True, key=f"candle_dash_{idx}")
+                        else:
+                            st.caption(f"{ticker}: No data")
+                    else:
+                        st.caption(f"{ticker}: No data")
+                except Exception as e:
+                    st.caption(f"{ticker}: Error ({e})")
+
+    st.markdown("### 🌐 10 3D Visualizations")
+    render_3d = st.toggle(
+        "Render 10 3D Charts",
+        value=False,
+        key="toggle_3d_dashboard",
+        help="Turn on to render 10 3D visualizations."
+    )
+
+    if render_3d:
+        st.caption("Rendering 3D charts.")
+        cols_3d = st.columns(2)
+        # Select 10 tickers for 3D
+        three_d_tickers = TRENDING_TICKERS[:10]
+        three_d_types = ["scatter3d", "surface3d", "scatter3d", "surface3d", "scatter3d", "surface3d", "scatter3d", "surface3d", "scatter3d", "surface3d"]
+        for idx, (ticker, chart_type) in enumerate(zip(three_d_tickers, three_d_types)):
+            with cols_3d[idx % 2]:
+                try:
+                    data = fetch_ohlc_data(ticker, period=data_period, auto_adjust=False)
+                    if data is not None and not data.empty:
+                        df = data.copy()
+                        if isinstance(df.columns, pd.MultiIndex):
+                            df.columns = df.columns.get_level_values(0)
+                        if 'Close' in df.columns:
+                            df = df[['Open', 'High', 'Low', 'Close']]
+                            fig_3d = create_advanced_chart(df, chart_type, ticker, COLORS)
+                            fig_3d.update_layout(height=300)
+                            st.plotly_chart(fig_3d, use_container_width=True, key=f"3d_dash_{idx}")
+                        else:
+                            st.caption(f"{ticker}: No data")
+                    else:
+                        st.caption(f"{ticker}: No data")
+                except Exception as e:
+                    st.caption(f"{ticker}: Error ({e})")
+
+
 # ─── SIDEBAR ────────────────────────────────────────────────────────────────
 
 with st.sidebar:
@@ -2726,11 +2815,14 @@ else:
     # ─── CANDLESTICK PATTERN ANALYSIS (fragmented so toggles don't reset) ────────────
     candlestick_patterns_fragment(valid_tickers, data_period)
 
+    # ─── CANDLESTICK DASHBOARD (fragmented) ────────────
+    candlestick_dashboard_fragment(valid_tickers, data_period)
+
 
     # ─── RISK METRICS TABLE ─────────────────────────────────────────────────
     st.markdown("""
     <div class="section-header">
-        <div class="section-tag">MODULE 07</div>
+        <div class="section-tag">MODULE 08</div>
         <div class="section-title">Risk & Tail Analytics</div>
         <div class="section-subtitle">Professional-grade metric suite with statistical decomposition</div>
     </div>
